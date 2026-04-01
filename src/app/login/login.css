@@ -1,0 +1,5 @@
+/* Hide sidebar on login page via CSS */
+body:has(.login-page) aside,
+body:has(.login-page) .mobile-hamburger-btn {
+  display: none !important;
+}
