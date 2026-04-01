@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "=== Starting Hermes Dashboard (localhost only) ==="
+echo "=== Starting Hermes Dashboard (Cloudflare Tunnel) ==="
 
+# 1. Bind dashboard to localhost only (no open ports)
 cd /opt/hermes-dashboard/.next/standalone
 
 while IFS='=' read -r key value; do
@@ -12,11 +13,25 @@ while IFS='=' read -r key value; do
   export "$key=$value"
 done < .env.local
 
-# IMPORTANT: localhost only - no open ports to internet
 export HOSTNAME=127.0.0.1
 export PORT=3000
 export NODE_ENV=production
 
-echo "Dashboard binding to 127.0.0.1:3000 (SSH tunnel required for external access)"
-echo "Access via: ssh -L 3000:localhost:3000 user@server"
+echo "Dashboard binding to 127.0.0.1:3000"
+
+# 2. Start Cloudflare Tunnel (exposes dashboard via Cloudflare, no open ports)
+if ! pgrep -f "cloudflared tunnel run" > /dev/null 2>&1; then
+  nohup cloudflared tunnel run hermes-dashboard > /var/log/cloudflared.log 2>&1 &
+  echo "Cloudflare Tunnel started (PID: $!)"
+else
+  echo "Cloudflare Tunnel already running"
+fi
+
+echo ""
+echo "=== Access ==="
+echo "URL: https://dashboard.example.com"
+echo "Auth: Cloudflare OTP + Dashboard login"
+echo "Security: Zero open ports to internet"
+echo ""
+
 exec node server.js
