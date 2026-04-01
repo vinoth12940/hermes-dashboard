@@ -1,18 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "=== Starting Hermes Dashboard + Caddy HTTPS ==="
+echo "=== Starting Hermes Dashboard (localhost only) ==="
 
-# Start Caddy reverse proxy (HTTPS on port 8443)
-if ! pgrep -f "caddy run" > /dev/null 2>&1; then
-  nohup /opt/hermes run --config /opt/hermes > /opt/hermes 2>&1 &
-  echo "Caddy started on port 8443 (PID: $!)"
-  sleep 2
-else
-  echo "Caddy already running"
-fi
-
-# Start Next.js dashboard
 cd /opt/hermes-dashboard/.next/standalone
 
 while IFS='=' read -r key value; do
@@ -22,9 +12,11 @@ while IFS='=' read -r key value; do
   export "$key=$value"
 done < .env.local
 
-export HOSTNAME=0.0.0.0
+# IMPORTANT: localhost only - no open ports to internet
+export HOSTNAME=127.0.0.1
 export PORT=3000
 export NODE_ENV=production
 
-echo "Starting Next.js on port 3000..."
+echo "Dashboard binding to 127.0.0.1:3000 (SSH tunnel required for external access)"
+echo "Access via: ssh -L 3000:localhost:3000 user@server"
 exec node server.js
