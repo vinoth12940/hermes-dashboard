@@ -21,8 +21,26 @@ export async function requireAuth(request: NextRequest) {
   return { payload };
 }
 
-export function safePath(hermesHome: string, requestedPath: string): string {
-  const resolved = path.resolve(hermesHome, requestedPath);
+// Blocklist of dangerous system directories that should never be accessed
+const BLOCKED_PREFIXES = ['/proc', '/sys', '/dev'];
+
+export function safePath(basePath: string, requestedPath: string): string {
+  const resolved = path.resolve(basePath || '/', requestedPath || '.');
+  if (!resolved.startsWith(basePath || '/')) {
+    throw new Error('Path traversal blocked');
+  }
+  // Block dangerous system dirs
+  for (const blocked of BLOCKED_PREFIXES) {
+    if (resolved === blocked || resolved.startsWith(blocked + '/')) {
+      throw new Error('Access to system directory blocked');
+    }
+  }
+  return resolved;
+}
+
+// Strict path — must stay within hermesHome (for write operations)
+export function strictPath(hermesHome: string, requestedPath: string): string {
+  const resolved = path.resolve(hermesHome, requestedPath || '.');
   if (!resolved.startsWith(hermesHome)) {
     throw new Error('Path traversal blocked');
   }

@@ -16,11 +16,11 @@ interface FileItem {
 }
 
 const quickAccess = [
-  { name: 'config.yaml', path: 'config.yaml', icon: Settings, desc: 'Main configuration' },
-  { name: 'Agent.md', path: 'hermes-agent/AGENTS.md', icon: FileCode, desc: 'Agent development guide' },
-  { name: 'Soul.md', path: 'soul.md', icon: Sparkles, desc: 'Agent personality' },
-  { name: '.env', path: '.env', icon: FileText, desc: 'Environment variables & API keys' },
-  { name: 'User Profile', path: 'memory/user.md', icon: Brain, desc: 'User memory' },
+  { name: 'config.yaml', path: '~/.hermes/config.yaml', icon: Settings, desc: 'Main configuration' },
+  { name: 'Agent.md', path: '/opt/hermes-agent/AGENTS.md', icon: FileCode, desc: 'Agent development guide' },
+  { name: 'Soul.md', path: '~/.hermes/soul.md', icon: Sparkles, desc: 'Agent personality' },
+  { name: '.env', path: '~/.hermes/.env', icon: FileText, desc: 'Environment variables & API keys' },
+  { name: 'User Profile', path: '~/.hermes/memory/user.md', icon: Brain, desc: 'User memory' },
 ];
 
 function formatSize(bytes: number): string {
@@ -42,8 +42,8 @@ function getFileIcon(name: string) {
 
 export default function FilesPage() {
   const [items, setItems] = useState<FileItem[]>([]);
-  const [currentPath, setCurrentPath] = useState('');
-  const [pathHistory, setPathHistory] = useState<string[]>(['']);
+  const [currentPath, setCurrentPath] = useState('/');
+  const [pathHistory, setPathHistory] = useState<string[]>(['/']);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [viewingFile, setViewingFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState('');
@@ -81,7 +81,7 @@ export default function FilesPage() {
   };
 
   useEffect(() => {
-    fetchDirectory('');
+    fetchDirectory('/');
   }, []);
 
   const navigateTo = (dirPath: string) => {
@@ -134,7 +134,7 @@ export default function FilesPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-100">Files</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {viewingFile ? viewingFile : `~/.hermes${currentPath}`}
+            {viewingFile ? viewingFile : currentPath}
           </p>
         </div>
         {hasChanges && (
@@ -152,7 +152,7 @@ export default function FilesPage() {
       </div>
 
       {/* Quick Access */}
-      {!viewingFile && currentPath === '' && (
+      {!viewingFile && currentPath === '/' && (
         <div>
           <h2 className="text-sm font-semibold text-zinc-400 mb-3">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -209,7 +209,7 @@ export default function FilesPage() {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <Folder className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-mono text-zinc-300">~/.hermes{currentPath}</span>
+            <span className="text-sm font-mono text-zinc-300">{currentPath}</span>
           </div>
           <div className="divide-y divide-zinc-800/30">
             {items.map((item, i) => {
@@ -235,7 +235,7 @@ export default function FilesPage() {
       )}
 
       {/* Root directory listing */}
-      {!viewingFile && currentPath === '' && (
+      {!viewingFile && currentPath === '/' && (
         <div className="glass-card overflow-hidden">
           <div className="p-4 border-b border-zinc-800/50">
             <h2 className="text-sm font-semibold text-zinc-400">Directory Contents</h2>
