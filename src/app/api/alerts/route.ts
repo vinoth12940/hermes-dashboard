@@ -122,13 +122,15 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'create': {
-        if (!alert || !alert.type || !alert.condition) {
-          return NextResponse.json({ error: 'type and condition are required' }, { status: 400 });
+        if (!alert || !alert.type) {
+          return NextResponse.json({ error: 'type is required' }, { status: 400 });
         }
+        const threshold = alert.condition?.threshold ?? alert.threshold ?? 80;
+        const operator = alert.condition?.operator ?? alert.operator ?? 'gt';
         const newAlert: AlertRule = {
           id: `alert_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           type: alert.type,
-          condition: alert.condition,
+          condition: { threshold, operator },
           enabled: alert.enabled !== undefined ? alert.enabled : true,
           notifyTo: alert.notifyTo || 'telegram',
         };
