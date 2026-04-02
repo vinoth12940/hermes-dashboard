@@ -6,7 +6,8 @@ import Badge from '@/components/Badge';
 import { 
   Cpu, MemoryStick, HardDrive, Clock, Wifi, MessageSquare, 
   Zap, Activity, TrendingUp, Server, RotateCcw, Trash2, Play, Database,
-  Send, Hash, Bell, MessageCircle, Radio, Home, RefreshCw, Loader2
+  Send, Hash, Bell, MessageCircle, Radio, Home, RefreshCw, Loader2,
+  CheckCircle, AlertCircle
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -114,21 +115,48 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [fetchStats, fetchPlatforms]);
 
+  const [actionMessage, setActionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
   const runAction = async (action: string) => {
     setActionLoading(action);
+    setActionMessage(null);
     try {
       let url = '';
-      if (action === 'restart') url = '/api/gateway/restart';
-      else if (action === 'logs') url = '/api/logs?action=clear';
-      else if (action === 'cron') url = '/api/cron?action=run-all';
-      else if (action === 'backup') url = '/api/backups?action=create';
+      let options: RequestInit = { method: 'POST' };
 
-      const res = await fetch(url, { method: 'POST' });
-      if (res.ok) {
-        setTimeout(() => { fetchStats(); fetchPlatforms(); }, 2000);
+      if (action === 'restart') url = '/api/gateway/restart';
+      else if (action === 'logs') url = '/api/logs';
+      else if (action === 'cron') {
+        url = '/api/cron';
+        options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'run-all' }),
+        };
       }
-    } catch {}
+      else if (action === 'backup') {
+        url = '/api/backups';
+        options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create' }),
+        };
+      }
+
+      const res = await fetch(url, options);
+      const data = await res.json();
+
+      if (res.ok) {
+        setActionMessage({ text: data.message || `${action} completed`, type: 'success' });
+        setTimeout(() => { fetchStats(); fetchPlatforms(); }, 2000);
+      } else {
+        setActionMessage({ text: data.error || `${action} failed`, type: 'error' });
+      }
+    } catch {
+      setActionMessage({ text: 'Request failed — check network', type: 'error' });
+    }
     setActionLoading(null);
+    setTimeout(() => setActionMessage(null), 5000);
   };
 
   const restartPlatform = async (platformName: string) => {
@@ -240,6 +268,24 @@ export default function DashboardPage() {
           </div>
         </button>
       </div>
+
+      {/* Action Feedback */}
+      {actionMessage && (
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium animate-fade-in ${
+          actionMessage.type === 'success'
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+        }`}>
+          {actionLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : actionMessage.type === 'success' ? (
+            <CheckCircle className="w-4 h-4" />
+          ) : (
+            <AlertCircle className="w-4 h-4" />
+          )}
+          {actionMessage.text}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

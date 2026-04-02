@@ -184,6 +184,35 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: 'Job resumed' });
       }
 
+      case 'run-all': {
+        const jobs = loadJobs(home);
+        const activeJobs = jobs.filter((j: any) => j.enabled && !j.paused_at);
+        if (activeJobs.length === 0) {
+          return NextResponse.json({ message: 'No active jobs to run' });
+        }
+        const { execSync } = require('child_process');
+        const results: { id: string; name: string; ok: boolean; error?: string }[] = [];
+        for (const job of activeJobs) {
+          try {
+            execSync(`${process.env.HOME}/.local/bin/hermes cron run ${job.id}`, { timeout: 120000, encoding: 'utf8' });
+            addRunHistory(job.id, true);
+            results.push({ id: job.id, name: job.name || job.id, ok: true });
+          } catch (err: any) {
+            addRunHistory(job.id, false);
+            results.push({ id: job.id, name: job.name || job.id, ok: false, error: String(err.message || err).slice(0, 200) });
+          }
+        }
+        const succeeded = results.filter(r => r.ok).length;
+        try {
+          const { logAudit } = await import('@/app/api/audit/route');
+          logAudit('cron_run_all', `${succeeded}/${activeJobs.length}`, `Ran all ${activeJobs.length} active jobs (${succeeded} succeeded)`);
+        } catch {}
+        return NextResponse.json({
+          message: `Ran ${activeJobs.length} jobs: ${succeeded} succeeded`,
+          results,
+        });
+      }
+
       default:
         return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }

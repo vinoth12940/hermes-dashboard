@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request);
+  const auth = requireAuth(request);
   if (auth.error) return auth.error;
 
   try {
@@ -54,6 +54,47 @@ export async function GET(request: NextRequest) {
       totalLines: logLines.length,
       search,
       level,
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const auth = requireAuth(request);
+  if (auth.error) return auth.error;
+
+  try {
+    const home = getHermesHome();
+    const logsDir = path.join(home, 'logs');
+
+    const files = await fs.readdir(logsDir).catch(() => []);
+    const logFiles = files.filter(f => f.endsWith('.log'));
+
+    let cleared = 0;
+    let totalFreed = 0;
+
+    for (const file of logFiles) {
+      const filePath = path.join(logsDir, file);
+      try {
+        const stat = await fs.stat(filePath);
+        totalFreed += stat.size;
+        await fs.writeFile(filePath, `# Log cleared at ${new Date().toISOString()}\n`, 'utf8');
+        cleared++;
+      } catch {}
+    }
+
+    try {
+      const { logAudit } = await import('@/app/api/audit/route');
+      logAudit('logs_cleared', `freed_${totalFreed}`, `Cleared ${cleared} log files (${(totalFreed / 1024).toFixed(1)} KB freed)`);
+    } catch {}
+
+    return NextResponse.json({
+      message: `Cleared ${cleared} log files`,
+      freed: totalFreed,
+      freedHuman: totalFreed > 1024 * 1024
+        ? `${(totalFreed / (1024 * 1024)).toFixed(1)} MB`
+        : `${(totalFreed / 1024).toFixed(1)} KB`,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
