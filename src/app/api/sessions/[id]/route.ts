@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, getHermesHome } from '@/lib/api-utils';
-import { execSync } from 'child_process';
 import path from 'path';
+import Database from 'better-sqlite3';
 
 export async function GET(
   request: NextRequest,
@@ -13,18 +13,33 @@ export async function GET(
   try {
     const { id } = await params;
     const home = getHermesHome();
-    const dbPath = path.join(home, 'sessions.db');
-    const safeId = id.replace(/'/g, "''");
+    const dbPath = path.join(home, 'state.db');
+    const fs = require('fs');
 
-    if (!require('fs').existsSync(dbPath)) {
+    if (!fs.existsSync(dbPath)) {
       return NextResponse.json({ messages: [] });
     }
 
-    const messages = JSON.parse(
-      execSync(`sqlite3 -json "${dbPath}" "SELECT role, content, tool_calls, timestamp FROM messages WHERE session_id='${safeId}' ORDER BY timestamp"`, 
-        { encoding: 'utf8' }
-      ).trim() || '[]'
-    );
+    const db = new Database(dbPath, { readonly: true });
+    const safeId = id.replace(/'/g, "''");
+
+    const rows = db.prepare(
+      `SELECT role, content, tool_calls, tool_name, timestamp, reasoning
+       FROM messages
+       WHERE session_id = ?
+       ORDER BY timestamp ASC`
+    ).all(safeId) as any[];
+
+    db.close();
+
+    const messages = rows.map(row => ({
+      role: row.role,
+      content: row.content || '',
+      tool_calls: row.tool_calls || null,
+      tool_name: row.tool_name || null,
+      timestamp: row.timestamp ? new Date(row.timestamp * 1000).toISOString() : null,
+      reasoning: row.reasoning || null,
+    }));
 
     return NextResponse.json({ messages });
   } catch (error: any) {

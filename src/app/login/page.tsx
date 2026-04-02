@@ -37,20 +37,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 relative overflow-hidden login-page">
+    <div className="min-h-screen flex items-center justify-center dark:bg-zinc-950 bg-gradient-to-br from-zinc-50 to-zinc-100 relative overflow-hidden login-page">
       {/* Background gradients */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 dark:bg-indigo-500/10 bg-indigo-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 dark:bg-violet-500/10 bg-violet-500/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] dark:bg-indigo-500/5 bg-indigo-500/3 rounded-full blur-3xl" />
 
-      <div className="p-8 w-full max-w-sm animate-fade-in relative z-10 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl">
+      <div className="p-8 w-full max-w-sm animate-fade-in relative z-10 dark:bg-zinc-900 bg-white rounded-2xl dark:border-zinc-800 border-zinc-200 shadow-2xl shadow-black/5 dark:shadow-black/50">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center mb-4">
             <Zap className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Hermes Dashboard</h1>
-          <p className="text-sm text-zinc-400 mt-1">Admin Access</p>
+          <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Hermes Dashboard</h1>
+          <p className="text-sm dark:text-zinc-400 text-zinc-500 mt-1">Admin Access</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -61,12 +61,12 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label className="text-sm font-medium text-zinc-300 block mb-1.5">Username</label>
+            <label className="text-sm font-medium dark:text-zinc-300 text-zinc-700 block mb-1.5">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition-colors"
+              className="w-full px-4 py-3 rounded-xl dark:bg-zinc-800 bg-zinc-50 dark:border-zinc-700 border-zinc-200 dark:text-white text-zinc-900 dark:placeholder-zinc-500 placeholder-zinc-400 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition-colors"
               placeholder="Enter username"
               required
               autoFocus
@@ -74,20 +74,20 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-zinc-300 block mb-1.5">Password</label>
+            <label className="text-sm font-medium dark:text-zinc-300 text-zinc-700 block mb-1.5">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition-colors pr-12"
+                className="w-full px-4 py-3 rounded-xl dark:bg-zinc-800 bg-zinc-50 dark:border-zinc-700 border-zinc-200 dark:text-white text-zinc-900 dark:placeholder-zinc-500 placeholder-zinc-400 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 outline-none transition-colors pr-12"
                 placeholder="Enter password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 dark:text-zinc-500 text-zinc-400 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

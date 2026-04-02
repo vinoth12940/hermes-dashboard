@@ -93,7 +93,7 @@ export default function ProcessesPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100 flex items-center gap-3">
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900 flex items-center gap-3">
             <Activity className="w-7 h-7 text-indigo-400" />
             Processes
           </h1>
@@ -108,7 +108,7 @@ export default function ProcessesPage() {
             className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors flex items-center gap-2 ${
               autoRefresh
                 ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
-                : 'text-zinc-500 border-zinc-800/50 hover:text-zinc-300 hover:bg-zinc-800/50'
+                : 'dark:text-zinc-500 text-zinc-600 dark:border-zinc-800/50 border-zinc-200/50 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50'
             }`}
           >
             <Timer className={`w-4 h-4 ${autoRefresh ? 'animate-pulse' : ''}`} />
@@ -116,7 +116,7 @@ export default function ProcessesPage() {
           </button>
           <button
             onClick={fetchProcesses}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-zinc-800/50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 rounded-xl text-sm font-medium dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -138,7 +138,7 @@ export default function ProcessesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800/50">
+                <tr className="border-b dark:border-zinc-800/50 border-zinc-200/50">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">PID</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">User</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">CPU%</th>
@@ -152,13 +152,13 @@ export default function ProcessesPage() {
               </thead>
               <tbody className="divide-y divide-zinc-800/30">
                 {processes.map(p => (
-                  <tr key={p.pid} className="hover:bg-zinc-800/20 transition-colors group">
+                  <tr key={p.pid} className="dark:hover:bg-zinc-800/20 hover:bg-zinc-100 transition-colors group">
                     <td className="px-4 py-3 font-mono text-indigo-300">{p.pid}</td>
-                    <td className="px-4 py-3 text-zinc-400">{p.user}</td>
-                    <td className={`px-4 py-3 font-mono ${p.cpu > 50 ? 'text-red-400' : p.cpu > 20 ? 'text-amber-400' : 'text-zinc-400'}`}>
+                    <td className="px-4 py-3 dark:text-zinc-400 text-zinc-500">{p.user}</td>
+                    <td className={`px-4 py-3 font-mono ${p.cpu > 50 ? 'text-red-400' : p.cpu > 20 ? 'text-amber-400' : 'dark:text-zinc-400 text-zinc-500'}`}>
                       {p.cpu.toFixed(1)}
                     </td>
-                    <td className={`px-4 py-3 font-mono ${p.mem > 50 ? 'text-red-400' : p.mem > 20 ? 'text-amber-400' : 'text-zinc-400'}`}>
+                    <td className={`px-4 py-3 font-mono ${p.mem > 50 ? 'text-red-400' : p.mem > 20 ? 'text-amber-400' : 'dark:text-zinc-400 text-zinc-500'}`}>
                       {p.mem.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 font-mono text-zinc-500">{formatBytes(p.rss)}</td>
@@ -166,7 +166,7 @@ export default function ProcessesPage() {
                       <Badge variant={statusColor(p.stat)} size="sm">{p.stat}</Badge>
                     </td>
                     <td className="px-4 py-3 font-mono text-zinc-500">{p.time}</td>
-                    <td className="px-4 py-3 font-mono text-zinc-400 text-xs max-w-[300px] truncate" title={p.command}>
+                    <td className="px-4 py-3 font-mono dark:text-zinc-400 text-zinc-500 text-xs max-w-[300px] truncate" title={p.command}>
                       {truncateCmd(p.command)}
                     </td>
                     <td className="px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity">

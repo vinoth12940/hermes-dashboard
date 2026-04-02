@@ -76,7 +76,8 @@ export function getSystemStats() {
 
     let hermesVersion = 'unknown';
     try {
-      hermesVersion = execSync('hermes --version 2>/dev/null | head -1', { encoding: 'utf8' }).trim();
+      const hermesBin = process.env.HOME + '/.local/bin/hermes';
+      hermesVersion = execSync(`${hermesBin} --version 2>/dev/null | head -1`, { encoding: 'utf8' }).trim();
     } catch {}
 
     const hostname = require('os').hostname();

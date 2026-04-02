@@ -124,7 +124,7 @@ export default function MemoryPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Memory</h1>
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Memory</h1>
           <p className="text-sm text-zinc-500 mt-1">Manage agent memory, user profile, and soul</p>
         </div>
         <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function MemoryPage() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-indigo-500/15 to-violet-500/15 text-white border border-indigo-500/20'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+                  : 'dark:text-zinc-400 text-zinc-800 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-600 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -162,9 +162,9 @@ export default function MemoryPage() {
           <span className="text-xs text-zinc-500">
             {fileNames[activeTab]} usage
           </span>
-          <span className="text-xs text-zinc-400">{charCount.toLocaleString()} / {maxChars.toLocaleString()} chars</span>
+          <span className="text-xs text-zinc-500">{charCount.toLocaleString()} / {maxChars.toLocaleString()} chars</span>
         </div>
-        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 dark:bg-zinc-800 bg-zinc-200 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               usagePercent > 90 ? 'bg-red-500' : usagePercent > 70 ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
@@ -176,13 +176,13 @@ export default function MemoryPage() {
 
       {/* Editor */}
       <div className="glass-card overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
-          <h3 className="text-sm font-semibold text-zinc-300">{fileNames[activeTab]}</h3>
+        <div className="flex items-center justify-between p-4 border-b dark:border-zinc-800/50 border-zinc-200/50">
+          <h3 className="text-sm font-semibold dark:text-zinc-600 text-zinc-500">{fileNames[activeTab]}</h3>
           <div className="flex gap-2">
             <button
               onClick={() => setConfirmReset(true)}
               disabled={!hasChanges}
-              className="p-2 rounded-xl text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors disabled:opacity-30"
+              className="p-2 rounded-xl dark:text-zinc-600 dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors disabled:opacity-30"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -199,7 +199,7 @@ export default function MemoryPage() {
         <textarea
           value={getContent()}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full h-[50vh] bg-zinc-900/50 text-zinc-300 font-mono text-sm p-4 resize-none border-none focus:ring-0"
+          className="w-full h-[50vh] dark:bg-zinc-900/50 bg-zinc-50 dark:text-zinc-600 text-zinc-500 font-mono text-sm p-4 resize-none border-none focus:ring-0"
           spellCheck={false}
           placeholder="No content yet..."
         />

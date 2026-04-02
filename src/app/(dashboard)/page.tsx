@@ -5,7 +5,8 @@ import StatsCard from '@/components/StatsCard';
 import Badge from '@/components/Badge';
 import { 
   Cpu, MemoryStick, HardDrive, Clock, Wifi, MessageSquare, 
-  Zap, Activity, TrendingUp, Server
+  Zap, Activity, TrendingUp, Server, RotateCcw, Trash2, Play, Database,
+  Send, Hash, Bell, MessageCircle, Radio, Home, RefreshCw, Loader2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -19,6 +20,18 @@ interface SystemStats {
   hostname: string;
 }
 
+interface PlatformStatus {
+  name: string;
+  icon: any;
+  connected: boolean;
+  status: string;
+  color: string;
+  enabled?: boolean;
+  lastActivity?: string;
+  error?: string;
+  apiKey?: string;
+}
+
 function formatBytes(bytes: number): string {
   const gb = bytes / (1024 * 1024 * 1024);
   return `${gb.toFixed(1)} GB`;
@@ -27,8 +40,8 @@ function formatBytes(bytes: number): string {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="glass-card p-2 text-xs bg-zinc-900 border border-zinc-700">
-      <p className="text-zinc-400">{label}</p>
+    <div className="glass-card p-2 text-xs dark:bg-zinc-900 bg-zinc-100 dark:border-zinc-700 border-zinc-200">
+      <p className="dark:text-zinc-400 text-zinc-500">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ color: p.color }}>{p.name}: {p.value}%</p>
       ))}
@@ -38,8 +51,12 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<SystemStats | null>(null);
-  const [history, setHistory] = useState<Array<{ time: string; cpu: number; memory: number }>>([]);
+  const [history, setHistory] = useState<Array<{ time: string; cpu: number; memory: number; disk: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const [platforms, setPlatforms] = useState<PlatformStatus[]>([]);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [restartingPlatform, setRestartingPlatform] = useState<string | null>(null);
+  const [platformMessage, setPlatformMessage] = useState('');
 
   const fetchStats = useCallback(async () => {
     try {
@@ -49,7 +66,7 @@ export default function DashboardPage() {
         setStats(data);
         setHistory(prev => {
           const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          const entry = { time: now, cpu: data.cpu.percent, memory: data.memory.percent };
+          const entry = { time: now, cpu: data.cpu.percent, memory: data.memory.percent, disk: data.disk.percent };
           const updated = [...prev, entry].slice(-60);
           return updated;
         });
@@ -58,11 +75,85 @@ export default function DashboardPage() {
     setLoading(false);
   }, []);
 
+  const fetchPlatforms = useCallback(async () => {
+    try {
+      const res = await fetch('/api/platforms');
+      if (res.ok) {
+        const data = await res.json();
+        const iconMap: Record<string, any> = {
+          Telegram: Send, Discord: MessageCircle, Slack: Hash,
+          WhatsApp: MessageSquare, Signal: Bell, 'Home Assistant': Home,
+        };
+        const colorMap: Record<string, string> = {
+          Telegram: 'from-blue-500 to-sky-500',
+          Discord: 'from-indigo-500 to-violet-500',
+          Slack: 'from-purple-500 to-pink-500',
+          WhatsApp: 'from-emerald-500 to-green-500',
+          Signal: 'from-cyan-500 to-teal-500',
+          'Home Assistant': 'from-amber-500 to-orange-500',
+        };
+        const platformList: PlatformStatus[] = (data.platforms || []).map((p: any) => ({
+          name: p.name,
+          icon: iconMap[p.name] || Radio,
+          connected: p.connected,
+          status: p.enabled ? (p.error || (p.connected ? 'Connected' : 'Disconnected')) : 'Disabled',
+          color: colorMap[p.name] || 'from-zinc-500 to-zinc-600',
+          enabled: p.enabled,
+          lastActivity: p.lastActivity,
+          error: p.error,
+        }));
+        setPlatforms(platformList);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     fetchStats();
+    fetchPlatforms();
     const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
-  }, [fetchStats]);
+  }, [fetchStats, fetchPlatforms]);
+
+  const runAction = async (action: string) => {
+    setActionLoading(action);
+    try {
+      let url = '';
+      if (action === 'restart') url = '/api/gateway/restart';
+      else if (action === 'logs') url = '/api/logs?action=clear';
+      else if (action === 'cron') url = '/api/cron?action=run-all';
+      else if (action === 'backup') url = '/api/backups?action=create';
+
+      const res = await fetch(url, { method: 'POST' });
+      if (res.ok) {
+        setTimeout(() => { fetchStats(); fetchPlatforms(); }, 2000);
+      }
+    } catch {}
+    setActionLoading(null);
+  };
+
+  const restartPlatform = async (platformName: string) => {
+    setRestartingPlatform(platformName);
+    setPlatformMessage('');
+    try {
+      const platformKey = platformName.toLowerCase().replace(/\s+/g, '');
+      const res = await fetch('/api/platforms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'restart', platform: platformKey }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPlatformMessage(`${platformName} restart signal sent`);
+        setTimeout(() => fetchPlatforms(), 5000);
+      } else {
+        setPlatformMessage(`Error: ${data.error}`);
+      }
+    } catch {
+      setPlatformMessage('Failed to restart platform');
+    }
+    setRestartingPlatform(null);
+    setTimeout(() => setPlatformMessage(''), 4000);
+  };
 
   if (loading) {
     return (
@@ -77,7 +168,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!stats) return <p className="text-zinc-400">Failed to load stats</p>;
+  if (!stats) return <p className="dark:text-zinc-400 text-zinc-500">Failed to load stats</p>;
 
   const gatewayOk = stats.gateway.status === 'active';
 
@@ -85,10 +176,69 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Dashboard</h1>
+        <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Dashboard</h1>
         <p className="text-sm text-zinc-500 mt-1">
-          System overview for <span className="text-zinc-300">{stats.hostname}</span>
+          System overview for <span className="dark:text-zinc-300 text-zinc-700">{stats.hostname}</span>
         </p>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <button
+          onClick={() => runAction('restart')}
+          disabled={actionLoading === 'restart'}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-amber-500/10 bg-amber-50 dark:border-amber-500/20 border-amber-200 border dark:hover:bg-amber-500/20 hover:bg-amber-100 transition-all disabled:opacity-50"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+            <RotateCcw className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Restart Gateway</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">Systemctl restart</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => runAction('logs')}
+          disabled={actionLoading === 'logs'}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-red-500/10 bg-red-50 dark:border-red-500/20 border-red-200 border dark:hover:bg-red-500/20 hover:bg-red-100 transition-all disabled:opacity-50"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center flex-shrink-0">
+            <Trash2 className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Clear Logs</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">Free disk space</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => runAction('cron')}
+          disabled={actionLoading === 'cron'}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-blue-500/10 bg-blue-50 dark:border-blue-500/20 border-blue-200 border dark:hover:bg-blue-500/20 hover:bg-blue-100 transition-all disabled:opacity-50"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
+            <Play className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Run All Cron Jobs</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">Execute scheduled</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => runAction('backup')}
+          disabled={actionLoading === 'backup'}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-200 border dark:hover:bg-emerald-500/20 hover:bg-emerald-100 transition-all disabled:opacity-50"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+            <Database className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Take Backup</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">Snapshot now</p>
+          </div>
+        </button>
       </div>
 
       {/* Stats Grid */}
@@ -150,9 +300,59 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-sm text-zinc-500 font-medium">Platform</p>
-            <p className="text-lg font-bold text-zinc-100">VPS Dashboard</p>
+            <p className="text-lg font-bold dark:text-zinc-100 text-zinc-900">VPS Dashboard</p>
             <Badge variant="success">Online</Badge>
           </div>
+        </div>
+      </div>
+
+      {/* Connected Platforms */}
+      <div className="glass-card p-6">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Radio className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-lg font-semibold dark:text-zinc-100 text-zinc-900">Connected Platforms</h2>
+          </div>
+          {platformMessage && (
+            <Badge variant={platformMessage.includes('Error') ? 'error' : 'success'}>{platformMessage}</Badge>
+          )}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {platforms.map((platform) => (
+            <div
+              key={platform.name}
+              className="group relative flex flex-col items-center gap-2 p-4 rounded-xl dark:bg-zinc-800/30 bg-zinc-50 border dark:border-zinc-700/30 border-zinc-200 transition-all hover:border-indigo-500/20"
+            >
+              {/* Restart button - appears on hover */}
+              {platform.enabled && (
+                <button
+                  onClick={() => restartPlatform(platform.name)}
+                  disabled={restartingPlatform === platform.name}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg dark:bg-zinc-800/80 bg-zinc-100 border dark:border-zinc-700/50 border-zinc-200 opacity-0 group-hover:opacity-100 transition-all hover:bg-indigo-500/10 hover:border-indigo-500/30 disabled:opacity-100"
+                  title={`Restart ${platform.name}`}
+                >
+                  {restartingPlatform === platform.name ? (
+                    <Loader2 className="w-3 h-3 text-indigo-400 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3 text-zinc-500 hover:text-indigo-400" />
+                  )}
+                </button>
+              )}
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${platform.color} flex items-center justify-center ${!platform.enabled ? 'opacity-20' : !platform.connected ? 'opacity-40' : ''}`}>
+                <platform.icon className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-medium dark:text-zinc-300 text-zinc-700">{platform.name}</span>
+              <Badge variant={platform.connected ? 'success' : platform.error ? 'error' : 'default'}>
+                {platform.connected ? 'Connected' : platform.enabled ? 'Offline' : 'Disabled'}
+              </Badge>
+              {platform.lastActivity && (
+                <span className="text-[10px] text-zinc-500">Last: {platform.lastActivity}</span>
+              )}
+              {platform.error && (
+                <span className="text-[10px] text-red-400/80 text-center leading-tight">{platform.error}</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -160,7 +360,7 @@ export default function DashboardPage() {
       <div className="glass-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Activity className="w-5 h-5 text-indigo-400" />
-          <h2 className="text-lg font-semibold text-zinc-100">Real-time Metrics</h2>
+          <h2 className="text-lg font-semibold dark:text-zinc-100 text-zinc-900">Real-time Metrics</h2>
           <Badge variant="info">5s refresh</Badge>
         </div>
         <div className="h-[200px]">
@@ -207,6 +407,102 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Individual Metric Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* CPU Chart */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Cpu className="w-4 h-4 text-blue-400" />
+            <h3 className="text-sm font-semibold dark:text-zinc-200 text-zinc-800">CPU Usage</h3>
+            <span className="ml-auto text-xl font-bold dark:text-zinc-100 text-zinc-900">{stats.cpu.percent}%</span>
+          </div>
+          <div className="h-[120px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="cpuG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(220, 70%, 60%)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="hsl(220, 70%, 60%)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <YAxis domain={[0, 100]} hide />
+                <XAxis dataKey="time" hide />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="cpu" stroke="hsl(220, 70%, 60%)" fill="url(#cpuG)" strokeWidth={2} name="CPU" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-between text-xs text-zinc-500 mt-2">
+            <span>{stats.cpu.cores} cores</span>
+            <span>Load: {stats.cpu.loadAvg.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Memory Chart */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <MemoryStick className="w-4 h-4 text-violet-400" />
+            <h3 className="text-sm font-semibold dark:text-zinc-200 text-zinc-800">Memory Usage</h3>
+            <span className="ml-auto text-xl font-bold dark:text-zinc-100 text-zinc-900">{stats.memory.percent}%</span>
+          </div>
+          <div className="h-[120px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="memG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(263, 70%, 58%)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="hsl(263, 70%, 58%)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <YAxis domain={[0, 100]} hide />
+                <XAxis dataKey="time" hide />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="memory" stroke="hsl(263, 70%, 58%)" fill="url(#memG)" strokeWidth={2} name="Memory" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-between text-xs text-zinc-500 mt-2">
+            <span>{formatBytes(stats.memory.used)} used</span>
+            <span>{formatBytes(stats.memory.total)} total</span>
+          </div>
+        </div>
+
+        {/* Disk Chart */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <HardDrive className="w-4 h-4 text-amber-400" />
+            <h3 className="text-sm font-semibold dark:text-zinc-200 text-zinc-800">Disk Usage</h3>
+            <span className="ml-auto text-xl font-bold dark:text-zinc-100 text-zinc-900">{stats.disk.percent}%</span>
+          </div>
+          <div className="h-[120px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="diskG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <YAxis domain={[0, 100]} hide />
+                <XAxis dataKey="time" hide />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="disk" stroke="hsl(38, 92%, 50%)" fill="url(#diskG)" strokeWidth={2} name="Disk" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-between text-xs text-zinc-500 mt-2">
+            <span>{formatBytes(stats.disk.used)} used</span>
+            <span>{formatBytes(stats.disk.total)} total</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Note */}
+      <p className="text-xs dark:text-zinc-600 text-zinc-400 text-center pb-4">
+        The restart button restarts the entire gateway service, not just a single platform.
+        All connected platforms will briefly disconnect and reconnect automatically.
+      </p>
     </div>
   );
 }

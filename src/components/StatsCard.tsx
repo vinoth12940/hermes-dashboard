@@ -17,7 +17,7 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, trend, c
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm text-zinc-500 font-medium">{title}</p>
-          <p className="text-2xl font-bold mt-1 text-zinc-100">{value}</p>
+          <p className="text-2xl font-bold mt-1 dark:text-zinc-100 text-zinc-900">{value}</p>
           {subtitle && (
             <p className={`text-xs mt-1 ${
               trend === 'up' ? 'text-emerald-400' : 

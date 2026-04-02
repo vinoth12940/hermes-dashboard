@@ -11,7 +11,7 @@ interface EnvVar {
 }
 
 const CATEGORIES = [
-  { id: 'all', label: 'All', color: 'text-zinc-400' },
+  { id: 'all', label: 'All', color: 'dark:text-zinc-400 text-zinc-500' },
   { id: 'provider', label: 'Providers', color: 'text-indigo-400' },
   { id: 'messaging', label: 'Messaging', color: 'text-emerald-400' },
   { id: 'tools', label: 'Tools', color: 'text-violet-400' },
@@ -146,7 +146,7 @@ export default function EnvVarsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100 flex items-center gap-3">
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900 flex items-center gap-3">
             <Key className="w-7 h-7 text-indigo-400" />
             Environment Variables
           </h1>
@@ -161,7 +161,7 @@ export default function EnvVarsPage() {
           )}
           <button
             onClick={() => setShowAdd(!showAdd)}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-zinc-800/50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 rounded-xl text-sm font-medium dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Add
@@ -183,18 +183,18 @@ export default function EnvVarsPage() {
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
             placeholder="KEY_NAME"
-            className="flex-1 px-3 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+            className="flex-1 px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
           />
           <input
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             placeholder="value"
-            className="flex-[2] px-3 py-2 rounded-xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+            className="flex-[2] px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
           />
           <button onClick={addVar} className="px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium hover:bg-indigo-500/30 transition-colors">
             Add
           </button>
-          <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-xl text-zinc-500 text-sm hover:text-zinc-300 transition-colors">
+          <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-xl text-zinc-500 text-sm dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 transition-colors">
             Cancel
           </button>
         </div>
@@ -206,7 +206,7 @@ export default function EnvVarsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search variables..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 text-sm placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
         />
       </div>
 
@@ -218,7 +218,7 @@ export default function EnvVarsPage() {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeCat === cat.id
                 ? 'bg-gradient-to-r from-indigo-500/15 to-violet-500/15 text-white border border-indigo-500/20'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+                : 'dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
             }`}
           >
             <span className={cat.color}>{cat.label}</span>
@@ -235,8 +235,8 @@ export default function EnvVarsPage() {
           </div>
         ) : (
           filtered.map(v => (
-            <div key={v.key} className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/20 transition-colors group">
-              <span className="text-sm font-mono text-zinc-300 min-w-[200px] flex-shrink-0">{v.key}</span>
+            <div key={v.key} className="flex items-center gap-3 px-4 py-3 dark:hover:bg-zinc-800/20 hover:bg-zinc-100 transition-colors group">
+              <span className="text-sm font-mono dark:text-zinc-300 text-zinc-700 min-w-[200px] flex-shrink-0">{v.key}</span>
 
               {editingKey === v.key ? (
                 <input
@@ -245,11 +245,11 @@ export default function EnvVarsPage() {
                   onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                   onBlur={saveEdit}
                   autoFocus
-                  className="flex-1 px-3 py-1 rounded-lg bg-zinc-900/80 border border-indigo-500/50 text-zinc-300 text-sm font-mono focus:border-indigo-500/50 transition-colors"
+                  className="flex-1 px-3 py-1 rounded-lg dark:bg-zinc-900/80 bg-zinc-100 border border-indigo-500/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono focus:border-indigo-500/50 transition-colors"
                 />
               ) : (
                 <div className="flex-1 flex items-center gap-2" onClick={() => startEdit(v)}>
-                  <code className="text-xs font-mono text-zinc-400 cursor-pointer hover:text-zinc-300 transition-colors flex-1 truncate">
+                  <code className="text-xs font-mono dark:text-zinc-400 text-zinc-500 cursor-pointer dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 transition-colors flex-1 truncate">
                     {isSecret(v.key) && !showSecrets.has(v.key)
                       ? maskValue(v.value)
                       : v.value || <span className="text-zinc-600 italic">empty</span>
@@ -260,7 +260,7 @@ export default function EnvVarsPage() {
 
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {isSecret(v.key) && (
-                  <button onClick={() => toggleSecret(v.key)} className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors">
+                  <button onClick={() => toggleSecret(v.key)} className="p-1.5 rounded-lg dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors">
                     {showSecrets.has(v.key) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 )}

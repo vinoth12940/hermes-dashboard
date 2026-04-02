@@ -83,7 +83,7 @@ export default function LogsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Logs</h1>
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Logs</h1>
           <p className="text-sm text-zinc-500 mt-1">
             {totalLines} lines in {currentFile}
           </p>
@@ -94,13 +94,13 @@ export default function LogsPage() {
           </Badge>
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-zinc-800/50 transition-colors"
+            className="p-2 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors"
           >
             {autoRefresh ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
           <button
             onClick={fetchLogs}
-            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-zinc-800/50 transition-colors"
+            className="p-2 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -112,7 +112,7 @@ export default function LogsPage() {
         <select
           value={currentFile}
           onChange={(e) => { setCurrentFile(e.target.value); setLoading(true); }}
-          className="px-4 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 text-sm focus:border-indigo-500/50 transition-colors"
+          className="px-4 py-2.5 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm focus:border-indigo-500/50 transition-colors"
         >
           {files.map(f => (
             <option key={f} value={f}>{f}</option>
@@ -125,7 +125,7 @@ export default function LogsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search logs..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 text-sm placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
           />
         </div>
 
@@ -139,9 +139,9 @@ export default function LogsPage() {
                   ? level === 'ERROR' ? 'bg-red-500/20 text-red-400 border border-red-500/20'
                     : level === 'WARN' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20'
                     : level === 'INFO' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20'
-                    : level === 'DEBUG' ? 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/20'
+                    : level === 'DEBUG' ? 'bg-zinc-500/20 dark:text-zinc-400 text-zinc-500 border border-zinc-500/20'
                     : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/20'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 border border-transparent'
+                  : 'dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
               }`}
             >
               {level || 'ALL'}
@@ -169,7 +169,7 @@ export default function LogsPage() {
             lines.map((line, i) => {
               const level = getLineLevel(line);
               return (
-                <div key={i} className={`py-0.5 hover:bg-zinc-800/30 px-2 rounded ${levelColors[level] || 'text-zinc-400'}`}>
+                <div key={i} className={`py-0.5 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 px-2 rounded ${levelColors[level] || 'dark:text-zinc-500 text-zinc-600'}`}>
                   <span className="text-zinc-600 mr-3 select-none">{i + 1}</span>
                   <span>{line}</span>
                 </div>

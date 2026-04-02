@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: 0 0% 3.9%;
   --foreground: 0 0% 98%;
@@ -21,6 +23,26 @@
   --radius: 0.75rem;
 }
 
+.light {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 98%;
+  --card-foreground: 0 0% 9%;
+  --primary: 263 70% 58%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 263 70% 58%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 263 70% 58%;
+}
+
 * {
   border-color: hsl(var(--border));
 }
@@ -31,7 +53,6 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -47,7 +68,6 @@ body {
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Glassmorphism card */
 .glass-card {
   background: hsl(var(--card) / 0.5);
   backdrop-filter: blur(24px);
@@ -56,7 +76,11 @@ body {
   border-radius: var(--radius);
 }
 
-/* Gradient text */
+.light .glass-card {
+  background: hsl(var(--card) / 0.7);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
 .gradient-text {
   background: linear-gradient(135deg, hsl(263, 70%, 58%), hsl(280, 70%, 60%), hsl(320, 70%, 58%));
   -webkit-background-clip: text;
@@ -64,7 +88,6 @@ body {
   background-clip: text;
 }
 
-/* Gradient border */
 .gradient-border {
   position: relative;
 }
@@ -82,7 +105,6 @@ body {
   pointer-events: none;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -110,19 +132,29 @@ body {
   animation: pulse-glow 2s infinite;
 }
 
-/* Log level colors */
 .log-error { color: #f87171; }
 .log-warn { color: #fbbf24; }
 .log-info { color: #60a5fa; }
 .log-debug { color: #a1a1aa; }
 
-/* Selection */
 ::selection {
   background: hsl(263, 70%, 58% / 0.3);
 }
 
-/* Input focus ring */
 input:focus, textarea:focus, select:focus {
   outline: none;
   box-shadow: 0 0 0 2px hsl(263, 70%, 58% / 0.3);
+}
+
+.light select option {
+  background: #fff;
+  color: #18181b;
+}
+
+.light .hover\:bg-zinc-800\/30:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

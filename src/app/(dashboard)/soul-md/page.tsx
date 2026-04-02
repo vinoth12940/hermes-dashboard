@@ -66,7 +66,7 @@ export default function SoulMDPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100 flex items-center gap-3">
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900 flex items-center gap-3">
             <Heart className="w-7 h-7 text-pink-400" />
             Soul MD
           </h1>
@@ -82,7 +82,7 @@ export default function SoulMDPage() {
           <button
             onClick={() => { setContent(originalContent); setSaveMessage(''); }}
             disabled={!hasChanges}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-zinc-800/50 transition-colors flex items-center gap-2 disabled:opacity-30"
+            className="px-4 py-2 rounded-xl text-sm font-medium dark:text-zinc-400 text-zinc-800 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-600 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors flex items-center gap-2 disabled:opacity-30"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
@@ -102,13 +102,13 @@ export default function SoulMDPage() {
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full h-[70vh] bg-zinc-900/80 text-zinc-300 font-mono text-sm p-4 rounded-xl border border-zinc-800/50 resize-none focus:border-pink-500/50 leading-relaxed"
+          className="w-full h-[70vh] dark:bg-zinc-900/80 bg-zinc-50/80 dark:text-zinc-600 text-zinc-500 font-mono text-sm p-4 rounded-xl border dark:border-zinc-800/50 border-zinc-200/50 resize-none focus:border-pink-500/50 leading-relaxed"
           spellCheck={false}
           placeholder="Loading SOUL.md..."
         />
       </div>
 
-      <div className="text-xs text-zinc-600">
+      <div className="text-xs dark:text-zinc-600 text-zinc-500">
         {content.split('\n').length} lines · {content.length} chars
       </div>
     </div>

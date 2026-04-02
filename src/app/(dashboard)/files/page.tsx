@@ -132,7 +132,7 @@ export default function FilesPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Files</h1>
+          <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Files</h1>
           <p className="text-sm text-zinc-500 mt-1">
             {viewingFile ? viewingFile : currentPath}
           </p>
@@ -154,7 +154,7 @@ export default function FilesPage() {
       {/* Quick Access */}
       {!viewingFile && currentPath === '/' && (
         <div>
-          <h2 className="text-sm font-semibold text-zinc-400 mb-3">Quick Access</h2>
+          <h2 className="text-sm font-semibold dark:text-zinc-400 text-zinc-500 mb-3">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {quickAccess.map(item => {
               const Icon = item.icon;
@@ -165,11 +165,11 @@ export default function FilesPage() {
                   className="glass-card p-4 text-left hover:border-indigo-500/20 transition-all group"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-800/80 flex items-center justify-center group-hover:bg-indigo-500/10 transition-colors">
-                      <Icon className="w-5 h-5 text-zinc-400 group-hover:text-indigo-400 transition-colors" />
+                    <div className="w-10 h-10 rounded-xl dark:bg-zinc-800/80 bg-zinc-200/80 flex items-center justify-center group-hover:bg-indigo-500/10 transition-colors">
+                      <Icon className="w-5 h-5 dark:text-zinc-400 text-zinc-500 group-hover:text-indigo-400 transition-colors" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-zinc-200">{item.name}</p>
+                      <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">{item.name}</p>
                       <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
                       <p className="text-xs text-zinc-600 font-mono mt-1">{item.path}</p>
                     </div>
@@ -184,18 +184,18 @@ export default function FilesPage() {
       {/* File Viewer */}
       {viewingFile && (
         <div className="glass-card overflow-hidden">
-          <div className="flex items-center gap-3 p-4 border-b border-zinc-800/50">
-            <button onClick={goBack} className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors">
+          <div className="flex items-center gap-3 p-4 border-b dark:border-zinc-800/50 border-zinc-200/50">
+            <button onClick={goBack} className="p-2 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </button>
             <FileText className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-mono text-zinc-300">{viewingFile}</span>
+            <span className="text-sm font-mono dark:text-zinc-300 text-zinc-700">{viewingFile}</span>
             {message && <Badge variant={message.includes('failed') ? 'error' : 'success'}>{message}</Badge>}
           </div>
           <textarea
             value={fileContent}
             onChange={(e) => setFileContent(e.target.value)}
-            className="w-full h-[60vh] bg-zinc-900/50 text-zinc-300 font-mono text-sm p-4 resize-none border-none focus:ring-0 leading-relaxed"
+            className="w-full h-[60vh] dark:bg-zinc-900/50 bg-zinc-50 dark:text-zinc-300 text-zinc-700 font-mono text-sm p-4 resize-none border-none focus:ring-0 leading-relaxed"
             spellCheck={false}
           />
         </div>
@@ -204,12 +204,12 @@ export default function FilesPage() {
       {/* Directory listing */}
       {!viewingFile && currentPath !== '' && (
         <div className="glass-card overflow-hidden">
-          <div className="flex items-center gap-3 p-4 border-b border-zinc-800/50">
-            <button onClick={goBack} className="p-2 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors">
+          <div className="flex items-center gap-3 p-4 border-b dark:border-zinc-800/50 border-zinc-200/50">
+            <button onClick={goBack} className="p-2 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors">
               <ArrowLeft className="w-4 h-4" />
             </button>
             <Folder className="w-4 h-4 text-indigo-400" />
-            <span className="text-sm font-mono text-zinc-300">{currentPath}</span>
+            <span className="text-sm font-mono dark:text-zinc-300 text-zinc-700">{currentPath}</span>
           </div>
           <div className="divide-y divide-zinc-800/30">
             {items.map((item, i) => {
@@ -218,10 +218,10 @@ export default function FilesPage() {
                 <button
                   key={item.path}
                   onClick={() => item.type === 'directory' ? navigateTo(item.path) : fetchFile(item.path)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 transition-colors text-left"
                 >
                   <Icon className={`w-4 h-4 ${item.type === 'directory' ? 'text-indigo-400' : 'text-zinc-500'}`} />
-                  <span className="text-sm text-zinc-300 flex-1">{item.name}</span>
+                  <span className="text-sm dark:text-zinc-300 text-zinc-700 flex-1">{item.name}</span>
                   {item.type === 'directory' && <ChevronRight className="w-4 h-4 text-zinc-600" />}
                   {item.type === 'file' && <span className="text-xs text-zinc-600">{formatSize(item.size)}</span>}
                 </button>
@@ -237,8 +237,8 @@ export default function FilesPage() {
       {/* Root directory listing */}
       {!viewingFile && currentPath === '/' && (
         <div className="glass-card overflow-hidden">
-          <div className="p-4 border-b border-zinc-800/50">
-            <h2 className="text-sm font-semibold text-zinc-400">Directory Contents</h2>
+          <div className="p-4 border-b dark:border-zinc-800/50 border-zinc-200/50">
+            <h2 className="text-sm font-semibold dark:text-zinc-400 text-zinc-500">Directory Contents</h2>
           </div>
           <div className="divide-y divide-zinc-800/30">
             {items.map((item) => {
@@ -247,10 +247,10 @@ export default function FilesPage() {
                 <button
                   key={item.path}
                   onClick={() => item.type === 'directory' ? navigateTo(item.path) : fetchFile(item.path)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 transition-colors text-left"
                 >
                   <Icon className={`w-4 h-4 ${item.type === 'directory' ? 'text-indigo-400' : 'text-zinc-500'}`} />
-                  <span className="text-sm text-zinc-300 flex-1">{item.name}</span>
+                  <span className="text-sm dark:text-zinc-300 text-zinc-700 flex-1">{item.name}</span>
                   {item.type === 'directory' && <ChevronRight className="w-4 h-4 text-zinc-600" />}
                   {item.type === 'file' && <span className="text-xs text-zinc-600">{formatSize(item.size)}</span>}
                 </button>
