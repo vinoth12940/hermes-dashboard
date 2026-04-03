@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const BASE = 'http://localhost:3000';
-const CREDS = { username: 'admin', password: 'PLACEHOLDER_PASSWORD' };
+const CREDS = { username: process.env.DASHBOARD_USER || 'admin', password: process.env.DASHBOARD_PASS || '' };
 
 test.describe('Hermes Dashboard', () => {
   let page;

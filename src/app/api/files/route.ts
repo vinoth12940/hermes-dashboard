@@ -3,13 +3,22 @@ import { requireAuth, getHermesHome, safePath, strictPath } from '@/lib/api-util
 import fs from 'fs/promises';
 import path from 'path';
 
+// Expand ~ and ~/ to actual home directory
+function resolveHome(filePath: string): string {
+  const home = process.env.HOME || '/root';
+  if (filePath === '~') return home;
+  if (filePath.startsWith('~/')) return path.join(home, filePath.slice(2));
+  return filePath;
+}
+
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request);
+  const auth=*** requireAuth(request);
   if (auth.error) return auth.error;
 
   try {
     const url = new URL(request.url);
-    const filePath = url.searchParams.get('path') || '';
+    const rawPath = url.searchParams.get('path') || '';
+    const filePath = resolveHome(rawPath);
     const listDir = url.searchParams.get('list') === 'true';
     // Read (browse) from root filesystem
     const basePath = '/';

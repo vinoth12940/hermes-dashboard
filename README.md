@@ -75,6 +75,8 @@ cd hermes-dashboard
 npm install
 ```
 
+> Replace the clone URL with your own fork if contributing.
+
 ### Configure Auth
 
 Create `auth.json` in the project root:
@@ -271,7 +273,7 @@ After=network.target
 [Service]
 Type=simple
 User=hermes
-WorkingDirectory=/opt/hermes-dashboard/.next/standalone
+WorkingDirectory=/path/to/hermes-dashboard/.next/standalone
 ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=5

@@ -17,7 +17,7 @@ interface FileItem {
 
 const quickAccess = [
   { name: 'config.yaml', path: '~/.hermes/config.yaml', icon: Settings, desc: 'Main configuration' },
-  { name: 'Agent.md', path: '/opt/hermes-agent/AGENTS.md', icon: FileCode, desc: 'Agent development guide' },
+  { name: 'Agent.md', path: '~/hermes-agent/AGENTS.md', icon: FileCode, desc: 'Agent development guide' },
   { name: 'Soul.md', path: '~/.hermes/soul.md', icon: Sparkles, desc: 'Agent personality' },
   { name: '.env', path: '~/.hermes/.env', icon: FileText, desc: 'Environment variables & API keys' },
   { name: 'User Profile', path: '~/.hermes/memory/user.md', icon: Brain, desc: 'User memory' },

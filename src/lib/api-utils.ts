@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import { execSync } from 'child_process';
 
 export function getHermesHome(): string {
-  return process.env.HERMES_HOME || path.join(process.env.HOME || '/opt/hermes', '.hermes');
+  return process.env.HERMES_HOME || path.join(process.env.HOME || '/root', '.hermes');
 }
 
 export async function requireAuth(request: NextRequest) {
