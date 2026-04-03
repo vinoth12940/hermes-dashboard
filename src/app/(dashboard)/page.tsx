@@ -7,7 +7,7 @@ import {
   Cpu, MemoryStick, HardDrive, Clock, Wifi, MessageSquare, 
   Zap, Activity, TrendingUp, Server, RotateCcw, Trash2, Play, Database,
   Send, Hash, Bell, MessageCircle, Radio, Home, RefreshCw, Loader2,
-  CheckCircle, AlertCircle
+  CheckCircle, AlertCircle, GitBranch
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -58,6 +58,7 @@ export default function DashboardPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [restartingPlatform, setRestartingPlatform] = useState<string | null>(null);
   const [platformMessage, setPlatformMessage] = useState('');
+  const [routingInfo, setRoutingInfo] = useState<any>(null);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -104,6 +105,33 @@ export default function DashboardPage() {
           error: p.error,
         }));
         setPlatforms(platformList);
+      }
+    } catch {}
+    // Fetch model routing info
+    try {
+      const configRes = await fetch('/api/config');
+      if (configRes.ok) {
+        const configData = await configRes.json();
+        const config = configData.config || {};
+        const routing = config.smart_model_routing || {};
+        const modelCfg = config.model || {};
+        const aux = config.auxiliary || {};
+        const auxList = Object.entries(aux).map(([role, entry]: [string, any]) => ({
+          role,
+          provider: entry.provider || 'custom',
+          model: entry.model || '—',
+        }));
+        const cheap = routing.cheap_model || {};
+        const cheapModel = typeof cheap === 'string' ? cheap : cheap.model || '';
+        const cheapProvider = typeof cheap === 'string' ? 'custom' : cheap.provider || 'custom';
+        setRoutingInfo({
+          enabled: routing.enabled === 'true' || routing.enabled === true || !!cheapModel,
+          mainModel: modelCfg.default || modelCfg.model || '',
+          mainProvider: modelCfg.provider || '',
+          cheapModel,
+          cheapProvider,
+          auxiliary: auxList,
+        });
       }
     } catch {}
   }, []);
@@ -350,6 +378,57 @@ export default function DashboardPage() {
             <Badge variant="success">Online</Badge>
           </div>
         </div>
+      </div>
+
+      {/* Model Routing & AI Providers */}
+      <div className="glass-card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <GitBranch className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-lg font-semibold dark:text-zinc-100 text-zinc-900">AI Model Routing</h2>
+        </div>
+        {routingInfo ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg dark:bg-zinc-800/40 bg-zinc-50 border dark:border-zinc-700/30 border-zinc-200">
+              <div>
+                <p className="text-xs text-zinc-500 font-medium">Smart Routing</p>
+                <p className="text-sm dark:text-zinc-300 text-zinc-700 font-mono">{routingInfo.enabled ? 'Enabled' : 'Disabled'}</p>
+              </div>
+              <Badge variant={routingInfo.enabled ? 'success' : 'default'}>
+                {routingInfo.enabled ? 'Active' : 'Off'}
+              </Badge>
+            </div>
+            {routingInfo.enabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg dark:bg-zinc-800/40 bg-zinc-50 border dark:border-zinc-700/30 border-zinc-200">
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Main Model</p>
+                  <p className="text-sm font-semibold dark:text-zinc-100 text-zinc-900">{routingInfo.mainModel || '—'}</p>
+                  <p className="text-xs text-zinc-500">{routingInfo.mainProvider || '—'}</p>
+                </div>
+                <div className="p-3 rounded-lg dark:bg-zinc-800/40 bg-zinc-50 border dark:border-zinc-700/30 border-zinc-200">
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Cheap Model (Simple Queries)</p>
+                  <p className="text-sm font-semibold dark:text-zinc-100 text-zinc-900">{routingInfo.cheapModel || '—'}</p>
+                  <p className="text-xs text-zinc-500">{routingInfo.cheapProvider || '—'}</p>
+                </div>
+              </div>
+            )}
+            {routingInfo.auxiliary && routingInfo.auxiliary.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500 font-medium mb-2">Auxiliary Providers</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {routingInfo.auxiliary.map((aux: { role: string; provider: string; model: string }) => (
+                    <div key={aux.role} className="p-2.5 rounded-lg dark:bg-zinc-800/30 bg-zinc-50/80 border dark:border-zinc-700/20 border-zinc-200">
+                      <p className="text-xs font-medium text-indigo-400 dark:text-indigo-400 text-indigo-600 capitalize">{aux.role}</p>
+                      <p className="text-xs dark:text-zinc-300 text-zinc-700 font-mono truncate">{aux.model}</p>
+                      <p className="text-[10px] text-zinc-500">{aux.provider}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm dark:text-zinc-400 text-zinc-500">Loading routing info...</p>
+        )}
       </div>
 
       {/* Connected Platforms */}

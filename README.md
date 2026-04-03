@@ -1,6 +1,6 @@
 # Hermes Admin Dashboard
 
-A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](https://github.com/nousresearch/hermes-agent) — system stats, configuration, logs, sessions, cron jobs, skills, and more, all in one place.
+A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](https://github.com/nousresearch/hermes-agent) — system stats, AI model routing, configuration, logs, sessions, cron jobs, skills, and more, all in one place.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
@@ -10,15 +10,15 @@ A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](
 
 ## Screenshots
 
-> Glassmorphic dark theme with gradient accents, responsive sidebar navigation, and real-time system monitoring.
+> Glassmorphic dark theme with gradient accents, responsive sidebar navigation, real-time system monitoring, and AI model routing overview.
 
 ## Features
 
-### 15 Pages
+### 16 Pages
 
 | Page | Description |
 |------|-------------|
-| **Dashboard** | System overview — CPU, memory, disk, uptime, gateway status, Hermes version, connected platforms with live activity + per-platform restart buttons |
+| **Dashboard** | System overview — CPU, memory, disk, uptime, gateway status, Hermes version, AI model routing (main/cheap/auxiliary providers), connected platforms with live activity + per-platform restart buttons |
 | **Configuration** | View and edit `config.yaml` — structured form editor with raw YAML toggle, real-time validation (model check, API key detection, empty field warnings, duplicate providers), visual border indicators, unsaved changes badge |
 | **Env Variables** | View and edit `.env` file — masked sensitive values, organized by category |
 | **Logs** | Browse and view Hermes log files with search + live streaming |
@@ -33,23 +33,25 @@ A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](
 | **Processes** | View background processes managed by Hermes |
 | **Agent MD** | View and edit `AGENTS.md` — the agent's development guide |
 | **Soul MD** | View and edit `SOUL.md` — the agent's personality and behavior config |
-| **Model Playground** | Test LLM models interactively — send prompts, compare responses, check API connectivity |
+| **Model Playground** | Test LLM models interactively — auto-discovers all providers (Z.AI, Anthropic, Google, Groq, DeepSeek, OpenRouter, Ollama), send prompts, measure latency, compare responses |
 
 ### Key Capabilities
 
+- **AI Model Routing overview** — home page shows smart routing status, main model, cheap model for simple queries, and all auxiliary provider roles (vision, compression, approval, etc.)
+- **Multi-provider playground** — auto-discovers providers from `config.yaml`, `.env` API keys, and local servers (Ollama). Supports OpenAI-compatible, Anthropic, and Ollama API formats out of the box
 - **Real-time platform detection** — checks both `config.yaml` and `.env` for platform credentials (Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant)
 - **Config validation** — detects empty API keys, validates model names against known providers, warns about env var override behavior, flags duplicate providers
 - **Cron job management** — full lifecycle from creation to deletion, with one-click run, inline prompt editing, and visual run history
 - **Audit trail** — all dashboard actions logged with timestamps for accountability
 - **Config safety** — automatic backups before any config change, one-click restore
-- **Glassmorphic UI** — dark theme with glass-card effects, gradient accents, smooth animations, and responsive layout
+- **Glassmorphic UI** — dark theme with glass-card effects, gradient accents, smooth animations, responsive layout, light/dark mode toggle
 - **Keyboard shortcuts** — quick navigation between pages
 - **JWT auth** — secure middleware-based route protection with bcrypt password hashing
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router, Server Components, Standalone mode)
-- **UI:** React 19, Tailwind CSS 4, Lucide React icons
+- **UI:** React 19, Tailwind CSS 4, Lucide React icons, next-themes (dark/light)
 - **Charts:** Recharts
 - **Auth:** JWT (jose) + bcryptjs, middleware-based route protection
 - **Data:** Reads directly from Hermes sources — SQLite (sessions), YAML (config), log files, cron state, env files
@@ -93,9 +95,9 @@ node -e "const bcrypt=require('bcryptjs'); console.log(bcrypt.hashSync('your-pas
 Or set environment variables:
 
 ```bash
-AUTH_USERNAME=***
-AUTH_PASSWORD_HASH=***
-JWT_SECRET=***
+AUTH_USERNAME=admin
+AUTH_PASSWORD_HASH=$2b$10$...
+JWT_SECRET=your-jwt-secret
 ```
 
 ### Development
@@ -139,7 +141,7 @@ bash deploy.sh
 src/
 ├── app/
 │   ├── (dashboard)/       # Protected pages (require auth)
-│   │   ├── page.tsx       # Dashboard overview
+│   │   ├── page.tsx       # Dashboard overview + AI model routing card
 │   │   ├── config/        # Configuration editor with validation
 │   │   ├── env-vars/      # Environment variables editor
 │   │   ├── logs/          # Log viewer with live streaming
@@ -152,7 +154,7 @@ src/
 │   │   ├── audit/         # Audit log viewer
 │   │   ├── backups/       # Config backup history
 │   │   ├── processes/     # Background process viewer
-│   │   ├── playground/    # Model playground
+│   │   ├── playground/    # Multi-provider model playground
 │   │   ├── agent-md/      # AGENTS.md editor
 │   │   └── soul-md/       # SOUL.md editor
 │   ├── api/               # API routes
@@ -172,12 +174,12 @@ src/
 │   │   ├── alerts/        # alert rules CRUD
 │   │   ├── audit/         # audit log read + write
 │   │   ├── backups/       # config backup list + restore
-│   │   ├── playground/    # model API proxy
+│   │   ├── playground/    # multi-provider model API (GET providers, POST test)
 │   │   ├── system/stats/  # CPU, memory, disk stats
 │   │   └── gateway/restart/
 │   ├── login/             # Login page
 │   ├── layout.tsx         # Root layout
-│   ├── globals.css        # Global styles (dark glassmorphic theme)
+│   ├── globals.css        # Global styles (dark/light theme, glassmorphic)
 │   └── middleware.ts      # Auth middleware
 ├── components/
 │   ├── AppShell.tsx       # App layout wrapper
@@ -224,7 +226,8 @@ tests/
 | GET/POST/DELETE | `/api/alerts` | Alert rules CRUD |
 | GET | `/api/audit` | Audit log |
 | GET/POST | `/api/backups` | Config backup list + restore |
-| POST | `/api/playground` | Send prompt to model API |
+| GET | `/api/playground` | List discovered providers (config + env + local) |
+| POST | `/api/playground` | Send prompt to model (OpenAI/Anthropic/Ollama compatible) |
 | POST | `/api/gateway/restart` | Restart Hermes gateway |
 
 ## Deployment
@@ -256,16 +259,6 @@ ingress:
   - hostname: dashboard.yourdomain.com
     service: http://localhost:3000
   - service: http_status:404
-```
-
-### Reverse Proxy (Caddy)
-
-Automatic HTTPS with Caddy:
-
-```
-dashboard.yourdomain.com {
-    reverse_proxy localhost:3000
-}
 ```
 
 ### Systemd Service
@@ -325,6 +318,7 @@ Currently 18 tests covering:
 ## Architecture Notes
 
 - **No database** — the dashboard reads directly from existing Hermes data sources (SQLite, YAML, log files, env files). No additional infrastructure needed.
+- **Provider discovery** — the playground auto-discovers AI providers from three sources: (1) `config.yaml` model/auxiliary config, (2) `.env` API keys (OpenAI, Anthropic, Google, Groq, DeepSeek, OpenRouter, etc.), (3) local servers like Ollama via HTTP probe. Supports OpenAI-compatible, Anthropic, and Ollama chat API formats.
 - **Platform detection** — platforms are detected from both `config.yaml` top-level keys AND environment variables (e.g., `TELEGRAM_BOT_TOKEN` in `.env`). A platform is "enabled" if either source has its credentials configured.
 - **Hermes binary path** — the dashboard uses `$HOME/.local/bin/hermes` for version detection since the Next.js server PATH may not include user-local bin directories.
 - **Config validation** — the config API runs 6+ checks including empty API key detection (critical: `api_key: ''` in YAML overrides env vars), model name validation, duplicate provider detection, and schedule expression validation.

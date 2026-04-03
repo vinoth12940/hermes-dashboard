@@ -224,6 +224,25 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 4. Check for local model servers (Ollama)
+    if (!providersMap.has('ollama')) {
+      try {
+        const ollamaRes = await fetch('http://127.0.0.1:11434/api/tags', { signal: AbortSignal.timeout(3000) });
+        if (ollamaRes.ok) {
+          const ollamaData = await ollamaRes.json();
+          const ollamaModels = (ollamaData.models || []).map((m: any) => m.name || m.model || '');
+          providersMap.set('ollama', {
+            name: 'ollama',
+            models: ollamaModels,
+            base_url: 'http://127.0.0.1:11434',
+            api_key_masked: 'local',
+            is_main: false,
+            role: 'Local LLM Server',
+          });
+        }
+      } catch {}
+    }
+
     const providers = Array.from(providersMap.values());
     return NextResponse.json({ providers });
   } catch (error: any) {
@@ -250,7 +269,16 @@ export async function POST(request: NextRequest) {
     let headers: Record<string, string>;
     let requestBody: Record<string, any>;
 
-    if (p === 'anthropic') {
+    if (p === 'ollama') {
+      const baseUrl = (base_url || 'http://127.0.0.1:11434').replace(/\/+$/, '');
+      url = `${baseUrl}/api/chat`;
+      headers = { 'Content-Type': 'application/json' };
+      requestBody = {
+        model,
+        messages: [{ role: 'user', content: message }],
+        stream: false,
+      };
+    } else if (p === 'anthropic') {
       const baseUrl = (base_url || 'https://api.anthropic.com').replace(/\/+$/, '');
       url = `${baseUrl}/v1/messages`;
       headers = {
@@ -311,7 +339,7 @@ export async function POST(request: NextRequest) {
         responseText = JSON.stringify(data);
       }
     } else {
-      responseText = data.choices?.[0]?.message?.content || JSON.stringify(data);
+      responseText = (data.message?.content || data.choices?.[0]?.message?.content || JSON.stringify(data));
     }
 
     return NextResponse.json({
