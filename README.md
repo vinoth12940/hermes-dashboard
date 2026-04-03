@@ -2,15 +2,11 @@
 
 A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](https://github.com/nousresearch/hermes-agent) — system stats, AI model routing, configuration, logs, sessions, cron jobs, skills, and more, all in one place.
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E-45ba4b?logo=playwright)
-
-## Screenshots
-
-> Glassmorphic dark theme with gradient accents, responsive sidebar navigation, real-time system monitoring, and AI model routing overview.
 
 ## Features
 
@@ -44,9 +40,15 @@ A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](
 - **Cron job management** — full lifecycle from creation to deletion, with one-click run, inline prompt editing, and visual run history
 - **Audit trail** — all dashboard actions logged with timestamps for accountability
 - **Config safety** — automatic backups before any config change, one-click restore
-- **Glassmorphic UI** — dark theme with glass-card effects, gradient accents, smooth animations, responsive layout, light/dark mode toggle
+- **Glassmorphic UI** — dark/light theme toggle, glass-card effects, gradient accents, smooth animations, responsive layout
 - **Keyboard shortcuts** — quick navigation between pages
 - **JWT auth** — secure middleware-based route protection with bcrypt password hashing
+
+### Security
+
+- **Pre-commit hook** — automatically scans staged files for sensitive data (passwords, API keys, tokens, personal info, server IPs) before allowing commits. Install with `bash scripts/install-hooks.sh`
+- **Path traversal protection** — on all file operations, with blocked system directories (`/proc`, `/sys`, `/dev`)
+- **Auth middleware** — on all routes except `/login` and `/api/auth/*`
 
 ## Tech Stack
 
@@ -55,8 +57,7 @@ A comprehensive web dashboard for managing and monitoring the [Hermes AI Agent](
 - **Charts:** Recharts
 - **Auth:** JWT (jose) + bcryptjs, middleware-based route protection
 - **Data:** Reads directly from Hermes sources — SQLite (sessions), YAML (config), log files, cron state, env files
-- **Exposure:** Cloudflare Tunnel (zero open ports, auto HTTPS)
-- **Testing:** Playwright (18 E2E tests)
+- **Testing:** Playwright E2E tests
 - **Runtime:** Node.js standalone server
 
 ## Getting Started
@@ -75,17 +76,14 @@ cd hermes-dashboard
 npm install
 ```
 
-> Replace the clone URL with your own fork if contributing.
-
 ### Configure Auth
 
-Create `auth.json` in the project root:
+Create `.env.local` in the project root:
 
-```json
-{
-  "username": "admin",
-  "passwordHash": "$2b$10$..."
-}
+```bash
+AUTH_USERNAME=admin
+AUTH_PASSWORD_HASH=<bcrypt hash>
+JWT_SECRET=<your secret>
 ```
 
 Generate a password hash:
@@ -94,13 +92,13 @@ Generate a password hash:
 node -e "const bcrypt=require('bcryptjs'); console.log(bcrypt.hashSync('your-password', 10))"
 ```
 
-Or set environment variables:
+### Install Git Hooks
 
 ```bash
-AUTH_USERNAME=admin
-AUTH_PASSWORD_HASH=$2b$10$...
-JWT_SECRET=your-jwt-secret
+bash scripts/install-hooks.sh
 ```
+
+This enables the pre-commit hook that scans for sensitive data before every commit.
 
 ### Development
 
@@ -116,11 +114,17 @@ Open [http://localhost:3000](http://localhost:3000) → login → dashboard.
 npm run build
 ```
 
-**Important:** Next.js standalone mode doesn't include static assets automatically. After every build, copy them:
+Next.js standalone mode doesn't include static assets automatically. After every build:
 
 ```bash
 cp -r .next/static .next/standalone/.next/static
 cp -r public .next/standalone/public
+```
+
+Or use the deploy script:
+
+```bash
+bash deploy.sh
 ```
 
 Then run:
@@ -130,75 +134,72 @@ cd .next/standalone
 node server.js
 ```
 
-### Quick Deploy Script
-
-```bash
-# Build + copy statics + restart
-bash deploy.sh
-```
-
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── (dashboard)/       # Protected pages (require auth)
-│   │   ├── page.tsx       # Dashboard overview + AI model routing card
-│   │   ├── config/        # Configuration editor with validation
-│   │   ├── env-vars/      # Environment variables editor
-│   │   ├── logs/          # Log viewer with live streaming
-│   │   ├── memory/        # Memory viewer
-│   │   ├── files/         # File browser
-│   │   ├── sessions/      # Session history with detail view
-│   │   ├── cron/          # Cron job CRUD + management
-│   │   ├── skills/        # Skills browser
-│   │   ├── alerts/        # Alert rules manager
-│   │   ├── audit/         # Audit log viewer
-│   │   ├── backups/       # Config backup history
-│   │   ├── processes/     # Background process viewer
-│   │   ├── playground/    # Multi-provider model playground
-│   │   ├── agent-md/      # AGENTS.md editor
-│   │   └── soul-md/       # SOUL.md editor
-│   ├── api/               # API routes
-│   │   ├── auth/          # login, logout, me
-│   │   ├── config/        # config.yaml CRUD + validation
-│   │   ├── cron/          # cron job list, create, run, pause, resume, delete
-│   │   ├── files/         # file browser
-│   │   ├── logs/          # log file listing + content + streaming
-│   │   ├── memory/        # memory/user/soul data
-│   │   ├── sessions/      # session list + detail
-│   │   ├── skills/        # skills list
-│   │   ├── agent-md/      # AGENTS.md read/write
-│   │   ├── soul-md/       # SOUL.md read/write
-│   │   ├── env-vars/      # .env file CRUD
-│   │   ├── platforms/     # platform status + restart
-│   │   ├── processes/     # background process list
-│   │   ├── alerts/        # alert rules CRUD
-│   │   ├── audit/         # audit log read + write
-│   │   ├── backups/       # config backup list + restore
-│   │   ├── playground/    # multi-provider model API (GET providers, POST test)
-│   │   ├── system/stats/  # CPU, memory, disk stats
-│   │   └── gateway/restart/
-│   ├── login/             # Login page
-│   ├── layout.tsx         # Root layout
-│   ├── globals.css        # Global styles (dark/light theme, glassmorphic)
-│   └── middleware.ts      # Auth middleware
+│   ├── (dashboard)/          # Protected pages (require auth)
+│   │   ├── page.tsx          # Dashboard overview + AI model routing card
+│   │   ├── config/           # Configuration editor with validation
+│   │   ├── env-vars/         # Environment variables editor
+│   │   ├── logs/             # Log viewer with live streaming
+│   │   ├── memory/           # Memory viewer
+│   │   ├── files/            # File browser
+│   │   ├── sessions/         # Session history with detail view
+│   │   ├── cron/             # Cron job CRUD + management
+│   │   ├── skills/           # Skills browser
+│   │   ├── alerts/           # Alert rules manager
+│   │   ├── audit/            # Audit log viewer
+│   │   ├── backups/          # Config backup history
+│   │   ├── processes/        # Background process viewer
+│   │   ├── playground/       # Multi-provider model playground
+│   │   ├── agent-md/         # AGENTS.md editor
+│   │   └── soul-md/          # SOUL.md editor
+│   ├── api/                  # API routes
+│   │   ├── auth/             # login, logout, me
+│   │   ├── config/           # config.yaml CRUD + validation
+│   │   ├── cron/             # cron job management
+│   │   ├── files/            # file browser
+│   │   ├── logs/             # log file listing + content + streaming
+│   │   ├── memory/           # memory/user/soul data
+│   │   ├── sessions/         # session list + detail
+│   │   ├── skills/           # skills list
+│   │   ├── agent-md/         # AGENTS.md read/write
+│   │   ├── soul-md/          # SOUL.md read/write
+│   │   ├── env-vars/         # .env file CRUD
+│   │   ├── platforms/        # platform status + restart
+│   │   ├── processes/        # background process list
+│   │   ├── alerts/           # alert rules CRUD
+│   │   ├── audit/            # audit log read + write
+│   │   ├── backups/          # config backup list + restore
+│   │   ├── playground/       # model API (GET providers, POST test)
+│   │   ├── system/stats/     # CPU, memory, disk stats
+│   │   └── gateway/restart/  # gateway restart
+│   ├── login/                # Login page
+│   ├── layout.tsx            # Root layout
+│   ├── globals.css           # Global styles (dark/light theme)
+│   └── middleware.ts         # Auth middleware
 ├── components/
-│   ├── AppShell.tsx       # App layout wrapper
-│   ├── AuthLayout.tsx     # Login layout
-│   ├── Badge.tsx          # Status badges (success, error, warning, default)
-│   ├── ConfirmDialog.tsx  # Confirmation modal
-│   ├── DashboardShell.tsx # Dashboard layout with sidebar
+│   ├── AppShell.tsx          # App layout wrapper
+│   ├── AuthLayout.tsx        # Login layout
+│   ├── Badge.tsx             # Status badges
+│   ├── ConfirmDialog.tsx     # Confirmation modal
+│   ├── DashboardShell.tsx    # Dashboard layout with sidebar
 │   ├── KeyboardShortcuts.tsx # Global keyboard shortcuts
-│   ├── Sidebar.tsx        # Navigation sidebar with section grouping
-│   └── StatsCard.tsx      # Stat display card with gradients
+│   ├── Sidebar.tsx           # Navigation sidebar
+│   └── StatsCard.tsx         # Stat display cards
 └── lib/
-    ├── api-utils.ts       # Auth helper, system stats, path safety
-    └── auth.ts            # JWT + bcrypt utilities
+    ├── api-utils.ts          # Auth helper, system stats, path safety
+    └── auth.ts               # JWT + bcrypt utilities
+
+scripts/
+├── install-hooks.sh          # Install pre-commit hook
+└── pre-commit.sh             # Sensitive data scanner
 
 tests/
 └── e2e/
-    └── dashboard.spec.ts  # Playwright E2E tests
+    └── dashboard.spec.ts     # Playwright E2E tests
 ```
 
 ## API Routes
@@ -238,20 +239,13 @@ tests/
 
 ```bash
 npm run build
-cp -r .next/static .next/standalone/.next/static
-cp -r public .next/standalone/public
+bash deploy.sh
 cd .next/standalone && node server.js
 ```
 
 ### Cloudflare Tunnel (Recommended)
 
-Zero open ports, automatic HTTPS, DDoS protection:
-
-```bash
-cloudflared tunnel --url http://localhost:3000
-```
-
-With a named tunnel and config:
+Zero open ports, automatic HTTPS, DDoS protection. Configure via `DASHBOARD_DOMAIN` and `CF_TUNNEL_NAME` env vars before running `bash start-dashboard.sh`.
 
 ```yaml
 # ~/.cloudflared/config.yml
@@ -287,44 +281,30 @@ WantedBy=multi-user.target
 E2E tests with Playwright:
 
 ```bash
-# Install browsers (first time)
 npx playwright install chromium
-
-# Run tests
 npx playwright test
-
-# Run with UI
-npx playwright test --ui
+npx playwright test --ui    # interactive mode
 ```
-
-Currently 18 tests covering:
-- Login page rendering (CSS, form elements)
-- Authentication flow and redirect
-- All pages load with content
-- Dashboard shows system stats
-- Config has structured view
-- Memory shows user/soul/memory content
-- Agent MD and Soul MD load file content
-- Sidebar navigation
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `JWT_SECRET` | Secret key for JWT tokens | `fallback-secret-change-me` |
-| `AUTH_USERNAME` | Admin username (if no auth.json) | `admin` |
-| `AUTH_PASSWORD_HASH` | bcrypt hash (if no auth.json) | — |
+| `AUTH_USERNAME` | Admin username | `admin` |
+| `AUTH_PASSWORD_HASH` | bcrypt password hash | — |
 | `PORT` | Server port | `3000` |
 | `HERMES_HOME` | Hermes home directory | `~/.hermes` |
+| `DASHBOARD_DOMAIN` | Domain for Cloudflare Tunnel | — |
+| `CF_TUNNEL_NAME` | Cloudflare Tunnel name | — |
 
 ## Architecture Notes
 
-- **No database** — the dashboard reads directly from existing Hermes data sources (SQLite, YAML, log files, env files). No additional infrastructure needed.
-- **Provider discovery** — the playground auto-discovers AI providers from three sources: (1) `config.yaml` model/auxiliary config, (2) `.env` API keys (OpenAI, Anthropic, Google, Groq, DeepSeek, OpenRouter, etc.), (3) local servers like Ollama via HTTP probe. Supports OpenAI-compatible, Anthropic, and Ollama chat API formats.
-- **Platform detection** — platforms are detected from both `config.yaml` top-level keys AND environment variables (e.g., `TELEGRAM_BOT_TOKEN` in `.env`). A platform is "enabled" if either source has its credentials configured.
-- **Hermes binary path** — the dashboard uses `$HOME/.local/bin/hermes` for version detection since the Next.js server PATH may not include user-local bin directories.
-- **Config validation** — the config API runs 6+ checks including empty API key detection (critical: `api_key: ''` in YAML overrides env vars), model name validation, duplicate provider detection, and schedule expression validation.
-- **Security** — path traversal protection on all file operations, blocked system directories (`/proc`, `/sys`, `/dev`), auth middleware on all routes except `/login` and `/api/auth/*`.
+- **No database** — reads directly from existing Hermes data sources (SQLite, YAML, log files, env files)
+- **Provider discovery** — the playground auto-discovers AI providers from `config.yaml`, `.env` API keys, and local servers (Ollama) via HTTP probe. Supports OpenAI-compatible, Anthropic, and Ollama chat API formats
+- **Platform detection** — detects from both `config.yaml` top-level keys AND environment variables
+- **Config validation** — runs 6+ checks including empty API key detection, model name validation, duplicate provider detection, and schedule expression validation
+- **Security** — path traversal protection, blocked system directories, auth middleware, pre-commit hook for sensitive data
 
 ## License
 
