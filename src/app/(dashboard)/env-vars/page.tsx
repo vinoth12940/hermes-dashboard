@@ -178,25 +178,27 @@ export default function EnvVarsPage() {
       </div>
 
       {showAdd && (
-        <div className="glass-card p-4 flex items-center gap-3">
+        <div className="glass-card p-4 flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <input
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
             placeholder="KEY_NAME"
-            className="flex-1 px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+            className="w-full md:flex-1 px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
           />
           <input
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             placeholder="value"
-            className="flex-[2] px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
+            className="w-full md:flex-[2] px-3 py-2 rounded-xl dark:bg-zinc-900/80 bg-zinc-100 border dark:border-zinc-800/50 border-zinc-200/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono placeholder-zinc-600 focus:border-indigo-500/50 transition-colors"
           />
-          <button onClick={addVar} className="px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium hover:bg-indigo-500/30 transition-colors">
-            Add
-          </button>
-          <button onClick={() => setShowAdd(false)} className="px-4 py-2 rounded-xl text-zinc-500 text-sm dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 transition-colors">
-            Cancel
-          </button>
+          <div className="flex gap-3">
+            <button onClick={addVar} className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-400 text-sm font-medium hover:bg-indigo-500/30 transition-colors">
+              Add
+            </button>
+            <button onClick={() => setShowAdd(false)} className="flex-1 md:flex-none px-4 py-2 rounded-xl text-zinc-500 text-sm dark:hover:text-zinc-300 hover:text-zinc-700 transition-colors">
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -235,8 +237,27 @@ export default function EnvVarsPage() {
           </div>
         ) : (
           filtered.map(v => (
-            <div key={v.key} className="flex items-center gap-3 px-4 py-3 dark:hover:bg-zinc-800/20 hover:bg-zinc-100 transition-colors group">
-              <span className="text-sm font-mono dark:text-zinc-300 text-zinc-700 min-w-[200px] flex-shrink-0">{v.key}</span>
+            <div key={v.key} className="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3 dark:hover:bg-zinc-800/20 hover:bg-zinc-100 transition-colors group">
+              <div className="flex items-center justify-between md:justify-start">
+                <span className="text-sm font-mono dark:text-zinc-300 text-zinc-700 shrink-0 md:w-48 lg:min-w-[200px]">{v.key}</span>
+                <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  {isSecret(v.key) && (
+                    <button onClick={() => toggleSecret(v.key)} className="p-1.5 rounded-lg dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors">
+                      {showSecrets.has(v.key) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+                  <Badge variant={
+                    v.category === 'provider' ? 'info' :
+                    v.category === 'messaging' ? 'success' :
+                    v.category === 'tools' ? 'default' :
+                    v.category === 'email' ? 'info' :
+                    v.category === 'voice' ? 'warning' : 'default'
+                  } size="sm">{v.category}</Badge>
+                  <button onClick={() => deleteVar(v.key)} className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
 
               {editingKey === v.key ? (
                 <input
@@ -245,11 +266,11 @@ export default function EnvVarsPage() {
                   onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                   onBlur={saveEdit}
                   autoFocus
-                  className="flex-1 px-3 py-1 rounded-lg dark:bg-zinc-900/80 bg-zinc-100 border border-indigo-500/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono focus:border-indigo-500/50 transition-colors"
+                  className="w-full md:flex-1 px-3 py-1 rounded-lg dark:bg-zinc-900/80 bg-zinc-100 border border-indigo-500/50 dark:text-zinc-300 text-zinc-700 text-sm font-mono focus:border-indigo-500/50 transition-colors"
                 />
               ) : (
-                <div className="flex-1 flex items-center gap-2" onClick={() => startEdit(v)}>
-                  <code className="text-xs font-mono dark:text-zinc-400 text-zinc-500 cursor-pointer dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 transition-colors flex-1 truncate">
+                <div className="w-full" onClick={() => startEdit(v)}>
+                  <code className="text-xs font-mono dark:text-zinc-400 text-zinc-500 cursor-pointer dark:hover:text-zinc-300 hover:text-zinc-700 transition-colors break-all block">
                     {isSecret(v.key) && !showSecrets.has(v.key)
                       ? maskValue(v.value)
                       : v.value || <span className="text-zinc-600 italic">empty</span>
@@ -257,24 +278,6 @@ export default function EnvVarsPage() {
                   </code>
                 </div>
               )}
-
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {isSecret(v.key) && (
-                  <button onClick={() => toggleSecret(v.key)} className="p-1.5 rounded-lg dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors">
-                    {showSecrets.has(v.key) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                )}
-                <Badge variant={
-                  v.category === 'provider' ? 'info' :
-                  v.category === 'messaging' ? 'success' :
-                  v.category === 'tools' ? 'default' :
-                  v.category === 'email' ? 'info' :
-                  v.category === 'voice' ? 'warning' : 'default'
-                } size="sm">{v.category}</Badge>
-                <button onClick={() => deleteVar(v.key)} className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
             </div>
           ))
         )}

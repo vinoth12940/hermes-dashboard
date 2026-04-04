@@ -135,7 +135,7 @@ export default function ProcessesPage() {
         </div>
       ) : (
         <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b dark:border-zinc-800/50 border-zinc-200/50">
@@ -169,7 +169,7 @@ export default function ProcessesPage() {
                     <td className="px-4 py-3 font-mono dark:text-zinc-400 text-zinc-500 text-xs max-w-[300px] truncate" title={p.command}>
                       {truncateCmd(p.command)}
                     </td>
-                    <td className="px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-4 py-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setConfirmKill(p)}
                         className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
@@ -181,6 +181,38 @@ export default function ProcessesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="block md:hidden divide-y divide-zinc-800/30">
+            {processes.map(p => (
+              <div key={p.pid} className="p-4 dark:hover:bg-zinc-800/20 hover:bg-zinc-100 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-mono text-indigo-300">PID {p.pid}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={statusColor(p.stat)} size="sm">{p.stat}</Badge>
+                    <button
+                      onClick={() => setConfirmKill(p)}
+                      className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs font-mono dark:text-zinc-400 text-zinc-500 truncate mb-2" title={p.command}>
+                  {truncateCmd(p.command)}
+                </p>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className={`font-mono ${p.cpu > 50 ? 'text-red-400' : p.cpu > 20 ? 'text-amber-400' : 'dark:text-zinc-400 text-zinc-500'}`}>
+                    CPU {p.cpu.toFixed(1)}%
+                  </span>
+                  <span className={`font-mono ${p.mem > 50 ? 'text-red-400' : p.mem > 20 ? 'text-amber-400' : 'dark:text-zinc-400 text-zinc-500'}`}>
+                    MEM {p.mem.toFixed(1)}%
+                  </span>
+                  <span className="font-mono dark:text-zinc-500 text-zinc-600">{formatBytes(p.rss)}</span>
+                  <span className="font-mono dark:text-zinc-500 text-zinc-600">{p.time}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

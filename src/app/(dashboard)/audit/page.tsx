@@ -65,7 +65,7 @@ export default function AuditPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Audit Log</h1>
           <p className="text-sm text-zinc-500 mt-1">Activity trail for config changes, cron actions, and more</p>
@@ -82,7 +82,7 @@ export default function AuditPage() {
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 max-w-xs">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <select
@@ -103,7 +103,7 @@ export default function AuditPage() {
           <div className="flex items-center justify-center h-64"><p className="text-zinc-500">Loading audit log...</p></div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b dark:border-zinc-800/50 border-zinc-200/50">
@@ -128,6 +128,37 @@ export default function AuditPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="block md:hidden divide-y dark:divide-zinc-800/30 divide-zinc-200">
+              {entries.map((entry, i) => (
+                <div key={i} className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant={getVariant(entry.action)}>{entry.action}</Badge>
+                    <span className="text-xs text-zinc-500">{formatDate(entry.timestamp)}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {entry.target && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-medium dark:text-zinc-500 text-zinc-400 uppercase tracking-wider flex-shrink-0 mt-px">Target</span>
+                        <span className="text-xs dark:text-zinc-300 text-zinc-600 font-mono truncate">{entry.target}</span>
+                      </div>
+                    )}
+                    {entry.details && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-medium dark:text-zinc-500 text-zinc-400 uppercase tracking-wider flex-shrink-0 mt-px">Details</span>
+                        <span className="text-xs dark:text-zinc-300 text-zinc-600 truncate">{entry.details}</span>
+                      </div>
+                    )}
+                    {entry.user && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-medium dark:text-zinc-500 text-zinc-400 uppercase tracking-wider flex-shrink-0 mt-px">User</span>
+                        <span className="text-xs dark:text-zinc-300 text-zinc-600">{entry.user}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
             {entries.length === 0 && (
               <div className="p-8 text-center text-zinc-500 text-sm">No audit entries found</div>

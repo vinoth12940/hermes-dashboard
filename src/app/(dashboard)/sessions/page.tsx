@@ -159,9 +159,11 @@ export default function SessionsPage() {
       <div className="glass-card overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64"><p className="text-zinc-500">Loading sessions...</p></div>
+        ) : sessions.length === 0 ? (
+          <div className="p-8 text-center text-zinc-500 text-sm">No sessions found</div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b dark:border-zinc-800/50 border-zinc-200/50">
@@ -203,9 +205,36 @@ export default function SessionsPage() {
                 </tbody>
               </table>
             </div>
-            {sessions.length === 0 && (
-              <div className="p-8 text-center text-zinc-500 text-sm">No sessions found</div>
-            )}
+
+            <div className="block md:hidden divide-y divide-zinc-800/30">
+              {sessions.map((session) => (
+                <div
+                  key={session.id}
+                  onClick={() => fetchMessages(session.id)}
+                  className="p-4 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 cursor-pointer transition-colors active:bg-zinc-800/50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Hash className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                      <span className="text-sm dark:text-zinc-300 text-zinc-700 font-mono">{session.id?.slice(0, 8)}</span>
+                    </div>
+                    <Badge variant="info">{session.source || 'cli'}</Badge>
+                  </div>
+                  {session.title && (
+                    <p className="text-xs text-zinc-500 truncate mb-2">{session.title}</p>
+                  )}
+                  <div className="flex items-center gap-3 text-xs dark:text-zinc-400 text-zinc-500">
+                    {session.model && (
+                      <span className="font-mono truncate">{truncate(session.model, 20)}</span>
+                    )}
+                    <span>{session.message_count || 0} msgs</span>
+                    <span>{formatTokens((session.input_tokens || 0) + (session.output_tokens || 0))} tokens</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-600 mt-1.5">{formatDate(session.started_at)}</div>
+                </div>
+              ))}
+            </div>
+
             {total > pageSize && (
               <div className="flex items-center justify-between px-4 py-3 border-t dark:border-zinc-800/50 border-zinc-200/50">
                 <span className="text-xs text-zinc-500">{page * pageSize + 1}-{Math.min((page + 1) * pageSize, total)} of {total}</span>

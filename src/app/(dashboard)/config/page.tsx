@@ -176,15 +176,15 @@ export default function ConfigPage() {
       if (isSecret(fullKey)) {
         const masked = showSecrets.has(fullKey) ? value : '••••••••••••';
         return (
-          <div className="flex items-center gap-2">
-            <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600">{masked}</code>
+          <div className="flex items-center gap-2 min-w-0">
+            <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600 break-all min-w-0">{masked}</code>
             <button onClick={() => toggleSecret(fullKey)} className="text-zinc-500 dark:hover:text-zinc-300 hover:text-zinc-700 transition-colors">
               {showSecrets.has(fullKey) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
           </div>
         );
       }
-      return <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600">{value}</code>;
+      return <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600 break-all block">{value}</code>;
     }
     if (Array.isArray(value)) {
       return (
@@ -192,7 +192,7 @@ export default function ConfigPage() {
           {value.map((item, i) => (
             <div key={i} className="pl-4 border-l dark:border-zinc-800 border-zinc-200">
               {typeof item === 'object' ? renderObject(item, `${path}.${key}[${i}]`) : (
-                <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600">{String(item)}</code>
+                <code className="text-xs dark:bg-zinc-800/80 bg-zinc-200/80 px-2 py-1 rounded font-mono dark:text-zinc-300 text-zinc-600 break-all">{String(item)}</code>
               )}
             </div>
           ))}
@@ -206,11 +206,11 @@ export default function ConfigPage() {
   };
 
   const renderObject = (obj: Record<string, any>, path: string) => (
-    <div className="space-y-2">
+    <div className="space-y-2 min-w-0">
       {Object.entries(obj).map(([k, v]) => (
-        <div key={k} className="flex flex-col gap-1">
-          <span className="text-xs text-zinc-500 font-medium">{k}</span>
-          {renderValue(k, v, path)}
+        <div key={k} className="flex flex-col gap-1 min-w-0">
+          <span className="text-xs text-zinc-500 font-medium truncate">{k}</span>
+          <div className="min-w-0">{renderValue(k, v, path)}</div>
         </div>
       ))}
     </div>
@@ -249,16 +249,16 @@ export default function ConfigPage() {
             <p className="text-zinc-500 text-sm">No API keys found in config. Keys are stored in .env file.</p>
           ) : (
             secrets.map((s, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl dark:bg-zinc-900/50 bg-zinc-50 border dark:border-zinc-800/50 border-zinc-200/50">
+              <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-3 rounded-xl dark:bg-zinc-900/50 bg-zinc-50 border dark:border-zinc-800/50 border-zinc-200/50">
                 <div>
                   <p className="text-sm font-medium dark:text-zinc-300 text-zinc-700">{s.key}</p>
-                  <p className="text-xs dark:text-zinc-500 text-zinc-500">{s.path}</p>
+                  <p className="text-xs dark:text-zinc-500 text-zinc-500 break-all">{s.path}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <code className="text-xs font-mono text-zinc-500">
+                <div className="flex items-center gap-2 md:ml-auto">
+                  <code className="text-xs font-mono text-zinc-500 break-all">
                     {showSecrets.has(s.path) ? s.value.slice(0, 8) + '...' + s.value.slice(-4) : '••••••••'}
                   </code>
-                  <button onClick={() => toggleSecret(s.path)} className="text-zinc-500 dark:hover:text-zinc-300 hover:text-zinc-700 transition-colors">
+                  <button onClick={() => toggleSecret(s.path)} className="text-zinc-500 dark:hover:text-zinc-300 hover:text-zinc-700 transition-colors shrink-0">
                     {showSecrets.has(s.path) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -287,9 +287,9 @@ export default function ConfigPage() {
           <p className="text-zinc-500 text-sm">No settings found for this section.</p>
         ) : (
           Object.entries(filtered).map(([k, v]) => (
-            <div key={k} className="p-4 rounded-xl dark:bg-zinc-900/50 bg-zinc-50 border dark:border-zinc-800/50 border-zinc-200/50">
-              <span className="text-sm font-semibold dark:text-zinc-300 text-zinc-700 block mb-2">{k}</span>
-              {renderValue(k, v, k)}
+            <div key={k} className="p-4 rounded-xl dark:bg-zinc-900/50 bg-zinc-50 border dark:border-zinc-800/50 border-zinc-200/50 min-w-0 overflow-hidden">
+              <span className="text-sm font-semibold dark:text-zinc-300 text-zinc-700 block mb-2 truncate">{k}</span>
+              <div className="min-w-0">{renderValue(k, v, k)}</div>
             </div>
           ))
         )}
@@ -379,7 +379,7 @@ export default function ConfigPage() {
           <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Configuration</h1>
           <p className="text-sm text-zinc-500 mt-1">Manage Hermes settings and API keys</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
           {saveMessage && (
             <Badge variant={saveMessage.includes('Error') || saveMessage.includes('Cannot') ? 'error' : 'success'}>{saveMessage}</Badge>
           )}
@@ -401,7 +401,7 @@ export default function ConfigPage() {
 
       {showRaw ? (
         <div className="glass-card p-6">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 flex-wrap mb-3">
             <span className="text-xs text-zinc-500">
               Auto-validates 2s after last edit
             </span>
@@ -438,11 +438,11 @@ export default function ConfigPage() {
             spellCheck={false}
           />
           {renderValidationResult()}
-          <div className="flex justify-end mt-4 gap-3">
+          <div className="flex flex-col-reverse md:flex-row justify-end mt-4 gap-3">
             <button
               onClick={() => validateConfig(rawConfig)}
               disabled={validating}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium dark:text-zinc-400 text-zinc-500 hover:text-white dark:hover:bg-zinc-700/50 hover:bg-zinc-200 border dark:border-zinc-700/50 border-zinc-200 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-sm font-medium dark:text-zinc-400 text-zinc-500 hover:text-white dark:hover:bg-zinc-700/50 hover:bg-zinc-200 border dark:border-zinc-700/50 border-zinc-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {validating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -458,8 +458,8 @@ export default function ConfigPage() {
             </button>
             <button
               onClick={() => saveConfig(rawConfig)}
-              disabled={saving || (validation && !validation.valid)}
-              className={`px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-all flex items-center gap-2 disabled:opacity-50 ${
+              disabled={saving || !!validation && !validation.valid}
+              className={`px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
                 validation && !validation.valid
                   ? 'bg-red-500/50 cursor-not-allowed'
                   : hasUnsavedChanges

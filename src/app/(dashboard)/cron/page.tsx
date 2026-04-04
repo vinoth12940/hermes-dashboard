@@ -506,7 +506,7 @@ export default function CronPage() {
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <button
                               onClick={(e) => { e.stopPropagation(); startEditPrompt(job); }}
-                              className="p-1 rounded-lg text-zinc-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                              className="p-1 rounded-lg text-zinc-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                               title="Edit prompt"
                             >
                               <Edit3 className="w-3 h-3" />
