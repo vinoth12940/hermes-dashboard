@@ -101,7 +101,7 @@ export default function MemoryPage() {
   const hasChanges = getContent() !== getOriginal();
 
   const charCount = getContent().length;
-  const maxChars = activeTab === 'user' ? 1375 : activeTab === 'memory' ? 2200 : 5000;
+  const maxChars = activeTab === 'user' ? 2750 : activeTab === 'memory' ? 4400 : 5000;
   const usagePercent = Math.round((charCount / maxChars) * 100);
 
   const tabConfig: { id: TabType; label: string; icon: typeof User }[] = [
