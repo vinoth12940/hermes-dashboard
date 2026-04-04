@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Settings, FileText, Brain, FileCode,
   MessageSquare, Clock, BookOpen, LogOut, X, Zap,
   ChevronLeft, ChevronRight, Bot, Sparkles, KeyRound, Activity,
-  Bell, Database, Sun, Moon, Menu, Terminal, Shield
+  Bell, Database, Sun, Moon, Menu, Terminal, Shield,
+  CreditCard, Globe
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -37,6 +38,8 @@ const navSections: NavSection[] = [
   {
     label: 'Data',
     items: [
+      { href: '/usage', label: 'Token Usage', icon: CreditCard },
+      { href: '/honcho', label: 'Honcho Memory', icon: Globe },
       { href: '/memory', label: 'Memory', icon: Brain },
       { href: '/files', label: 'Files', icon: FileCode },
       { href: '/logs', label: 'Logs', icon: FileText },
