@@ -36,7 +36,7 @@ export default function MemoryPage() {
         setOriginalMemory(data.memoryContent || '');
         setOriginalSoul(data.soulContent || '');
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

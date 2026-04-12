@@ -73,13 +73,13 @@ export function getSystemStats() {
     let gatewayStatus = 'unknown';
     try {
       gatewayStatus = execSync('systemctl is-active hermes-gateway 2>/dev/null', { encoding: 'utf8' }).trim();
-    } catch {}
+    } catch (e) { console.error(e); }
 
     let hermesVersion = 'unknown';
     try {
       const hermesBin = process.env.HOME + '/.local/bin/hermes';
       hermesVersion = execSync(`${hermesBin} --version 2>/dev/null | head -1`, { encoding: 'utf8' }).trim();
-    } catch {}
+    } catch (e) { console.error(e); }
 
     const hostname = require('os').hostname();
     const cpus = require('os').cpus().length;

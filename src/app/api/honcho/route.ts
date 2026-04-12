@@ -38,7 +38,7 @@ async function honchoPost(key: string, url: string, body: Record<string, unknown
 }
 
 export async function GET(request: NextRequest) {
-  const { error: authError } = requireAuth(request);
+  const { error: authError } = await requireAuth(request);
   if (authError) return authError;
 
   try {

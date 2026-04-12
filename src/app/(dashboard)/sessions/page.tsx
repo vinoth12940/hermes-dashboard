@@ -47,7 +47,7 @@ export default function SessionsPage() {
         setSessions(data.sessions);
         setTotal(data.total);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -60,7 +60,7 @@ export default function SessionsPage() {
         const data = await res.json();
         setMessages(data.messages);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoadingMessages(false);
   };
 

@@ -62,7 +62,7 @@ export default function FilesPage() {
         setItems(data.items);
         setCurrentPath(data.currentPath);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -76,7 +76,7 @@ export default function FilesPage() {
         setOriginalContent(data.content);
         setViewingFile(filePath);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

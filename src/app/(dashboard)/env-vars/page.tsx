@@ -46,7 +46,7 @@ export default function EnvVarsPage() {
         setVars(data.vars || []);
         setRaw(data.raw || '');
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

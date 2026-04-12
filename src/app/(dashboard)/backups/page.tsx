@@ -34,7 +34,7 @@ export default function BackupsPage() {
         const data = await res.json();
         setBackups(data.backups || []);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

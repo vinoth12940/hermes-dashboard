@@ -38,7 +38,7 @@ export default function SkillsPage() {
         // Auto-expand all categories
         setExpandedCategories(new Set((data.skills || []).map((c: SkillCategory) => c.category)));
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -56,7 +56,7 @@ export default function SkillsPage() {
         const data = await res.json();
         setSkillContent(data.content || '');
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoadingContent(false);
   };
 

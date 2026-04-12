@@ -33,7 +33,7 @@ export default function ProcessesPage() {
         const data = await res.json();
         setProcesses(data.processes || []);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 

@@ -57,7 +57,7 @@ export default function AlertsPage() {
         setAlerts(data.alerts || []);
         setEvents(data.events || []);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -94,7 +94,7 @@ export default function AlertsPage() {
         body: JSON.stringify({ action: 'update', alert: { id: alert.id, enabled: !alert.enabled } }),
       });
       if (res.ok) await fetchData();
-    } catch {}
+    } catch (e) { console.error(e); }
   };
 
   const deleteAlert = async (id: string) => {
@@ -105,7 +105,7 @@ export default function AlertsPage() {
         body: JSON.stringify({ action: 'delete', alert: { id } }),
       });
       if (res.ok) await fetchData();
-    } catch {}
+    } catch (e) { console.error(e); }
   };
 
   const testAlerts = async () => {

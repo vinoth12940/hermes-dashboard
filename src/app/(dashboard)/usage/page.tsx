@@ -170,7 +170,7 @@ export default function UsagePage() {
           <div className="flex items-center gap-2 mb-4">
             <Zap className="w-4 h-4 text-indigo-400" />
             <h2 className="text-lg font-semibold dark:text-zinc-100 text-zinc-900">Z.AI Account</h2>
-            <Badge color="indigo">{zai.level?.toUpperCase() || 'UNKNOWN'}</Badge>
+            <Badge variant="info">{zai.level?.toUpperCase() || 'UNKNOWN'}</Badge>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Token Rate Limit */}
