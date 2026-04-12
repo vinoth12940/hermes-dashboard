@@ -7,7 +7,7 @@ import {
   MessageSquare, Clock, BookOpen, LogOut, X, Zap,
   ChevronLeft, ChevronRight, Bot, Sparkles, KeyRound, Activity,
   Bell, Database, Sun, Moon, Menu, Terminal, Shield,
-  CreditCard, Globe
+  CreditCard, Globe, Wrench
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -23,6 +23,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/', label: 'Home', icon: LayoutDashboard },
       { href: '/processes', label: 'Processes', icon: Activity },
+      { href: '/maintenance', label: 'Maintenance', icon: Wrench },
       { href: '/logs', label: 'Logs', icon: FileText },
     ],
   },
