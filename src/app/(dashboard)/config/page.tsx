@@ -425,17 +425,7 @@ export default function ConfigPage() {
               <Badge variant="success">Valid</Badge>
             )}
           </div>
-          <div
-            className="flex rounded-xl border overflow-hidden resize-none transition-colors ${
-              validation?.errors && validation.errors.length > 0
-                ? 'border-red-500/50'
-                : validation?.valid && warningCount === 0
-                  ? 'border-emerald-500/30'
-                  : validation?.warnings && validation.warnings.length > 0
-                    ? 'border-amber-500/30'
-                    : 'dark:border-zinc-800/50 border-zinc-200/50'
-            }`}
-          >
+          <div className={`flex rounded-xl border overflow-hidden resize-none transition-colors ${validation?.errors && validation.errors.length > 0 ? 'border-red-500/50' : validation?.valid && !warningCount ? 'border-emerald-500/30' : validation?.warnings?.length ? 'border-amber-500/30' : 'dark:border-zinc-800/50 border-zinc-200/50'}`}>
             <div className="flex-shrink-0 dark:bg-zinc-900/80 bg-zinc-100 text-zinc-500 text-xs font-mono py-4 px-3 text-right select-none border-r dark:border-zinc-800/50 border-zinc-200 overflow-hidden leading-5">
               {rawConfig.split('\n').map((_, i) => (
                 <div key={i}>{i + 1}</div>

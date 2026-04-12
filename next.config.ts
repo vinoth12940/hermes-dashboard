@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  // eslint: {
+  eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
