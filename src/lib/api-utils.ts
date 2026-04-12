@@ -67,7 +67,8 @@ export function getSystemStats() {
     const uptimeHours = Math.floor((parseFloat(uptime) % 86400) / 3600);
 
     const loadAvg = execSync('cat /proc/loadavg', { encoding: 'utf8' }).trim().split(' ');
-    const cpuPercent = Math.min(100, Math.round((parseFloat(loadAvg[0]) / 2) * 100));
+    const numCores = require('os').cpus().length;
+    const cpuPercent = Math.min(100, Math.round((parseFloat(loadAvg[0]) / numCores) * 100));
 
     let gatewayStatus = 'unknown';
     try {
