@@ -155,6 +155,26 @@ input:focus, textarea:focus, select:focus {
   background: rgba(0,0,0,0.03);
 }
 
+.dark .glass-card:hover {
+  border-color: hsl(263, 70%, 58% / 0.15);
+}
+
+.light .glass-card:hover {
+  border-color: hsl(263, 70%, 58% / 0.2);
+}
+
+button, a {
+  transition: all 0.15s ease;
+}
+
+.dark button:hover, .dark a:hover {
+  filter: brightness(1.05);
+}
+
+.light button:hover, .light a:hover {
+  filter: brightness(0.95);
+}
+
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

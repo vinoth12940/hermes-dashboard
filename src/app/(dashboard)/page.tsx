@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import StatsCard from '@/components/StatsCard';
 import Badge from '@/components/Badge';
+import { useRouter } from 'next/navigation';
 import { 
   Cpu, MemoryStick, HardDrive, Clock, Wifi, MessageSquare, 
   Zap, Activity, TrendingUp, Server, RotateCcw, Trash2, Play, Database,
   Send, Hash, Bell, MessageCircle, Radio, Home, RefreshCw, Loader2,
-  CheckCircle, AlertCircle, GitBranch
+  CheckCircle, AlertCircle, GitBranch, FileText, Settings
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
@@ -51,6 +52,7 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [history, setHistory] = useState<Array<{ time: string; cpu: number; memory: number; disk: number }>>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +75,7 @@ export default function DashboardPage() {
           return updated;
         });
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, []);
 
@@ -106,7 +108,7 @@ export default function DashboardPage() {
         }));
         setPlatforms(platformList);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     // Fetch model routing info
     try {
       const configRes = await fetch('/api/config');
@@ -133,7 +135,7 @@ export default function DashboardPage() {
           auxiliary: auxList,
         });
       }
-    } catch {}
+    } catch (e) { console.error(e); }
   }, []);
 
   useEffect(() => {
@@ -239,7 +241,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <button
           onClick={() => runAction('restart')}
           disabled={actionLoading === 'restart'}
@@ -283,16 +285,28 @@ export default function DashboardPage() {
         </button>
 
         <button
-          onClick={() => runAction('backup')}
-          disabled={actionLoading === 'backup'}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-200 border dark:hover:bg-emerald-500/20 hover:bg-emerald-100 transition-all disabled:opacity-50"
+          onClick={() => router.push('/logs')}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-zinc-800/30 bg-zinc-50 dark:border-zinc-700/30 border-zinc-200 border dark:hover:bg-zinc-800/50 hover:bg-zinc-100 transition-all"
         >
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
-            <Database className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-4 h-4 text-white" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Take Backup</p>
-            <p className="text-xs dark:text-zinc-500 text-zinc-500">Snapshot now</p>
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">View Logs</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">Recent events</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => router.push('/config')}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl dark:bg-zinc-800/30 bg-zinc-50 dark:border-zinc-700/30 border-zinc-200 border dark:hover:bg-zinc-800/50 hover:bg-zinc-100 transition-all"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+            <Settings className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium dark:text-zinc-200 text-zinc-800">Edit Config</p>
+            <p className="text-xs dark:text-zinc-500 text-zinc-500">YAML editor</p>
           </div>
         </button>
       </div>
@@ -324,6 +338,7 @@ export default function DashboardPage() {
           icon={Cpu}
           color="from-blue-500 to-cyan-500"
           trend={stats.cpu.percent > 80 ? 'down' : 'neutral'}
+          gradientBorder
         />
         <StatsCard
           title="Memory"
@@ -332,6 +347,7 @@ export default function DashboardPage() {
           icon={MemoryStick}
           color="from-violet-500 to-purple-500"
           trend={stats.memory.percent > 80 ? 'down' : 'neutral'}
+          gradientBorder
         />
         <StatsCard
           title="Disk Usage"
@@ -340,6 +356,7 @@ export default function DashboardPage() {
           icon={HardDrive}
           color="from-amber-500 to-orange-500"
           trend={stats.disk.percent > 90 ? 'down' : 'neutral'}
+          gradientBorder
         />
         <StatsCard
           title="Uptime"
@@ -348,34 +365,64 @@ export default function DashboardPage() {
           icon={Clock}
           color="from-emerald-500 to-teal-500"
           trend="up"
+          gradientBorder
         />
       </div>
 
       {/* Gateway + Hermes row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatsCard
-          title="Gateway Status"
-          value={gatewayOk ? 'Running' : stats.gateway.status}
-          subtitle={gatewayOk ? 'All systems operational' : 'Check gateway service'}
-          icon={Wifi}
-          color={gatewayOk ? 'from-emerald-500 to-green-500' : 'from-red-500 to-rose-500'}
-          trend={gatewayOk ? 'up' : 'down'}
-        />
-        <StatsCard
-          title="Hermes Version"
-          value={stats.hermes.version.replace('Hermes Agent v', 'v')}
-          subtitle="AI Agent runtime"
-          icon={Zap}
-          color="from-indigo-500 to-violet-500"
-        />
-        <div className="glass-card p-5 animate-fade-in flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
-            <Server className="w-5 h-5 text-white" />
+        <div className="glass-card p-5 animate-fade-in hover:border-indigo-500/20 transition-all duration-300">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Gateway Status</p>
+              <div className="flex items-center gap-2 mt-1">
+                {gatewayOk && (
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                  </span>
+                )}
+                <p className="text-3xl font-bold leading-tight dark:text-zinc-100 text-zinc-900">
+                  {gatewayOk ? 'Running' : stats.gateway.status}
+                </p>
+              </div>
+              <p className={`text-xs mt-1.5 ${gatewayOk ? 'text-emerald-400' : 'text-red-400'}`}>
+                {gatewayOk ? 'All systems operational' : 'Check gateway service'}
+              </p>
+            </div>
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gatewayOk ? 'from-emerald-500 to-green-500' : 'from-red-500 to-rose-500'} flex items-center justify-center`}>
+              <Wifi className="w-5 h-5 text-white" />
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-zinc-500 font-medium">Platform</p>
-            <p className="text-lg font-bold dark:text-zinc-100 text-zinc-900">VPS Dashboard</p>
-            <Badge variant="success">Online</Badge>
+        </div>
+        <div className="glass-card p-5 animate-fade-in hover:border-indigo-500/20 transition-all duration-300">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Hermes Version</p>
+              <p className="text-3xl font-bold mt-1 leading-tight dark:text-zinc-100 text-zinc-900">{stats.hermes.version.replace('Hermes Agent v', 'v')}</p>
+              <p className="text-xs mt-1.5 text-zinc-500">AI Agent runtime</p>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="glass-card p-5 animate-fade-in hover:border-indigo-500/20 transition-all duration-300">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Platform</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                </span>
+                <p className="text-3xl font-bold leading-tight dark:text-zinc-100 text-zinc-900">VPS</p>
+              </div>
+              <p className="text-xs mt-1.5 text-zinc-500">Dashboard online</p>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+              <Server className="w-5 h-5 text-white" />
+            </div>
           </div>
         </div>
       </div>
@@ -467,9 +514,12 @@ export default function DashboardPage() {
                 <platform.icon className="w-5 h-5 text-white" />
               </div>
               <span className="text-sm font-medium dark:text-zinc-300 text-zinc-700">{platform.name}</span>
-              <Badge variant={platform.connected ? 'success' : platform.error ? 'error' : 'default'}>
-                {platform.connected ? 'Connected' : platform.enabled ? 'Offline' : 'Disabled'}
-              </Badge>
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${platform.connected ? 'bg-emerald-400' : platform.enabled ? 'bg-amber-400' : 'bg-zinc-500'}`} />
+                <Badge variant={platform.connected ? 'success' : platform.error ? 'error' : 'default'}>
+                  {platform.connected ? 'Connected' : platform.enabled ? 'Offline' : 'Disabled'}
+                </Badge>
+              </div>
               {platform.lastActivity && (
                 <span className="text-[10px] text-zinc-500">Last: {platform.lastActivity}</span>
               )}

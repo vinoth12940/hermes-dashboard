@@ -75,7 +75,7 @@ export default function CronPage() {
         const data = await res.json();
         setJobs(data.jobs || []);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -404,9 +404,15 @@ export default function CronPage() {
                       <h3 className="text-sm font-semibold dark:text-zinc-200 text-zinc-800 truncate">
                         {job.name || 'Unnamed Job'}
                       </h3>
-                      <Badge variant={job.enabled !== false ? 'success' : 'warning'}>
-                        {job.enabled !== false ? 'Active' : 'Paused'}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${
+                          job.last_error ? 'bg-red-400' :
+                          job.enabled !== false ? 'bg-emerald-400' : 'bg-amber-400'
+                        }`} />
+                        <Badge variant={job.last_error ? 'error' : job.enabled !== false ? 'success' : 'warning'}>
+                          {job.last_error ? 'Error' : job.enabled !== false ? 'Active' : 'Paused'}
+                        </Badge>
+                      </div>
                       {job.deliver && <Badge variant="info">{job.deliver}</Badge>}
                       {job.model && <Badge variant="default">{job.model}</Badge>}
                     </div>

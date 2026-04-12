@@ -37,7 +37,7 @@ export default function LogsPage() {
         setLines(data.lines);
         setTotalLines(data.totalLines);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   }, [currentFile, search, levelFilter]);
 
@@ -79,13 +79,27 @@ export default function LogsPage() {
     debug: 'text-zinc-500',
   };
 
+  const levelDotColors: Record<string, string> = {
+    error: 'bg-red-400',
+    warn: 'bg-amber-400',
+    info: 'bg-blue-400',
+    debug: 'bg-zinc-500',
+  };
+
+  const levelBadgeColors: Record<string, string> = {
+    error: 'text-red-400 bg-red-500/15',
+    warn: 'text-amber-400 bg-amber-500/15',
+    info: 'text-blue-400 bg-blue-500/15',
+    debug: 'text-zinc-500 bg-zinc-500/15',
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">Logs</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {totalLines} lines in {currentFile}
+            Viewing {totalLines} lines in {currentFile}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -130,23 +144,27 @@ export default function LogsPage() {
         </div>
 
         <div className="flex gap-1">
-          {['', 'ERROR', 'WARN', 'INFO', 'DEBUG'].map(level => (
-            <button
-              key={level || 'ALL'}
-              onClick={() => setLevelFilter(level)}
-              className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
-                levelFilter === level
-                  ? level === 'ERROR' ? 'bg-red-500/20 text-red-400 border border-red-500/20'
-                    : level === 'WARN' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20'
-                    : level === 'INFO' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20'
-                    : level === 'DEBUG' ? 'bg-zinc-500/20 dark:text-zinc-400 text-zinc-500 border border-zinc-500/20'
-                    : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/20'
-                  : 'dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
-              }`}
-            >
-              {level || 'ALL'}
-            </button>
-          ))}
+          {['', 'ERROR', 'WARN', 'INFO', 'DEBUG'].map(level => {
+            const dotColor = level === 'ERROR' ? 'bg-red-400' : level === 'WARN' ? 'bg-amber-400' : level === 'INFO' ? 'bg-blue-400' : level === 'DEBUG' ? 'bg-zinc-500' : 'bg-indigo-400';
+            return (
+              <button
+                key={level || 'ALL'}
+                onClick={() => setLevelFilter(level)}
+                className={`px-3 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  levelFilter === level
+                    ? level === 'ERROR' ? 'bg-red-500/20 text-red-400 border border-red-500/20'
+                      : level === 'WARN' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20'
+                      : level === 'INFO' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/20'
+                      : level === 'DEBUG' ? 'bg-zinc-500/20 dark:text-zinc-400 text-zinc-500 border border-zinc-500/20'
+                      : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/20'
+                    : 'dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-700 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+                {level || 'ALL'}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -169,9 +187,17 @@ export default function LogsPage() {
             lines.map((line, i) => {
               const level = getLineLevel(line);
               return (
-                <div key={i} className={`py-0.5 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 px-2 rounded ${levelColors[level] || 'dark:text-zinc-500 text-zinc-600'}`}>
-                  <span className="text-zinc-600 mr-3 select-none">{i + 1}</span>
-                  <span>{line}</span>
+                <div key={i} className={`py-1 px-2 rounded flex items-start gap-2 dark:hover:bg-zinc-800/30 hover:bg-zinc-100 transition-colors ${levelColors[level] || 'dark:text-zinc-500 text-zinc-600'}`}>
+                  <span className="text-zinc-600 mr-1 select-none flex-shrink-0 w-8 text-right">{i + 1}</span>
+                  {level && (
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[5px] ${levelDotColors[level]}`} />
+                  )}
+                  {level && (
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase flex-shrink-0 ${levelBadgeColors[level]}`}>
+                      {level}
+                    </span>
+                  )}
+                  <span className="break-all">{line}</span>
                 </div>
               );
             })

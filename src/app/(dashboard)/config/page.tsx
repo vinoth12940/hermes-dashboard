@@ -41,6 +41,7 @@ export default function ConfigPage() {
   const [validating, setValidating] = useState(false);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function ConfigPage() {
         setHasUnsavedChanges(false);
         setValidation(null);
       }
-    } catch {}
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -119,7 +120,7 @@ export default function ConfigPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create' }),
-      }).catch(() => {});
+      }).catch((e) => { console.error(e); });
       const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +130,8 @@ export default function ConfigPage() {
         setSaveMessage('Configuration saved successfully');
         setValidation(null);
         setHasUnsavedChanges(false);
-        setTimeout(() => setSaveMessage(''), 3000);
+        setSavedSuccessfully(true);
+        setTimeout(() => { setSaveMessage(''); setSavedSuccessfully(false); }, 3000);
         await fetchConfig();
       } else {
         const data = await res.json();
@@ -423,20 +425,29 @@ export default function ConfigPage() {
               <Badge variant="success">Valid</Badge>
             )}
           </div>
-          <textarea
-            value={rawConfig}
-            onChange={(e) => handleRawChange(e.target.value)}
-            className={`w-full h-[60vh] dark:bg-zinc-900/80 bg-zinc-50/80 dark:text-zinc-300 text-zinc-700 font-mono text-sm p-4 rounded-xl border resize-none focus:border-indigo-500/50 transition-colors ${
+          <div
+            className="flex rounded-xl border overflow-hidden resize-none transition-colors ${
               validation?.errors && validation.errors.length > 0
-                ? 'border-red-500/50 focus:border-red-500/50'
+                ? 'border-red-500/50'
                 : validation?.valid && warningCount === 0
-                  ? 'border-emerald-500/30 focus:border-emerald-500/50'
+                  ? 'border-emerald-500/30'
                   : validation?.warnings && validation.warnings.length > 0
-                    ? 'border-amber-500/30 focus:border-amber-500/50'
+                    ? 'border-amber-500/30'
                     : 'dark:border-zinc-800/50 border-zinc-200/50'
             }`}
-            spellCheck={false}
-          />
+          >
+            <div className="flex-shrink-0 dark:bg-zinc-900/80 bg-zinc-100 text-zinc-500 text-xs font-mono py-4 px-3 text-right select-none border-r dark:border-zinc-800/50 border-zinc-200 overflow-hidden leading-5">
+              {rawConfig.split('\n').map((_, i) => (
+                <div key={i}>{i + 1}</div>
+              ))}
+            </div>
+            <textarea
+              value={rawConfig}
+              onChange={(e) => handleRawChange(e.target.value)}
+              className="w-full h-[60vh] dark:bg-zinc-900/80 bg-zinc-50/80 dark:text-zinc-300 text-zinc-700 font-mono text-xs p-4 leading-5 resize-none focus:outline-none"
+              spellCheck={false}
+            />
+          </div>
           {renderValidationResult()}
           <div className="flex flex-col-reverse md:flex-row justify-end mt-4 gap-3">
             <button
@@ -462,13 +473,19 @@ export default function ConfigPage() {
               className={`px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
                 validation && !validation.valid
                   ? 'bg-red-500/50 cursor-not-allowed'
-                  : hasUnsavedChanges
-                    ? 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 animate-pulse'
-                    : 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90'
+                  : savedSuccessfully
+                    ? 'bg-emerald-500'
+                    : hasUnsavedChanges
+                      ? 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90 animate-pulse'
+                      : 'bg-gradient-to-r from-indigo-500 to-violet-500 hover:opacity-90'
               }`}
             >
-              <Save className="w-4 h-4" />
-              {saving ? 'Saving...' : 'Save Config'}
+              {savedSuccessfully ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Saving...' : savedSuccessfully ? 'Saved \u2713' : 'Save Config'}
             </button>
           </div>
         </div>

@@ -19,46 +19,41 @@ interface NavSection {
 
 const navSections: NavSection[] = [
   {
-    label: 'Overview',
+    label: 'System',
     items: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/sessions', label: 'Sessions', icon: MessageSquare },
-    ],
-  },
-  {
-    label: 'Management',
-    items: [
-      { href: '/config', label: 'Configuration', icon: Settings },
-      { href: '/cron', label: 'Cron Jobs', icon: Clock },
-      { href: '/skills', label: 'Skills', icon: BookOpen },
+      { href: '/', label: 'Home', icon: LayoutDashboard },
       { href: '/processes', label: 'Processes', icon: Activity },
-      { href: '/playground', label: 'Playground', icon: Terminal },
-    ],
-  },
-  {
-    label: 'Data',
-    items: [
-      { href: '/usage', label: 'Token Usage', icon: CreditCard },
-      { href: '/honcho', label: 'Honcho Memory', icon: Globe },
-      { href: '/memory', label: 'Memory', icon: Brain },
-      { href: '/files', label: 'Files', icon: FileCode },
       { href: '/logs', label: 'Logs', icon: FileText },
-      { href: '/env-vars', label: 'Env Variables', icon: KeyRound },
     ],
   },
   {
     label: 'Configuration',
     items: [
-      { href: '/agent-md', label: 'Agent MD', icon: Bot },
-      { href: '/soul-md', label: 'Soul MD', icon: Sparkles },
+      { href: '/config', label: 'Config', icon: Settings },
+      { href: '/env-vars', label: 'Env Vars', icon: KeyRound },
+      { href: '/cron', label: 'Cron', icon: Clock },
     ],
   },
   {
-    label: 'System',
+    label: 'Content',
     items: [
+      { href: '/agent-md', label: 'Agent.md', icon: Bot },
+      { href: '/soul-md', label: 'Soul.md', icon: Sparkles },
+      { href: '/memory', label: 'Memory', icon: Brain },
+      { href: '/skills', label: 'Skills', icon: BookOpen },
+      { href: '/sessions', label: 'Sessions', icon: MessageSquare },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { href: '/playground', label: 'Playground', icon: Terminal },
+      { href: '/usage', label: 'Usage', icon: CreditCard },
       { href: '/alerts', label: 'Alerts', icon: Bell },
+      { href: '/audit', label: 'Audit', icon: Shield },
       { href: '/backups', label: 'Backups', icon: Database },
-      { href: '/audit', label: 'Audit Log', icon: Shield },
+      { href: '/files', label: 'Files', icon: FileCode },
+      { href: '/honcho', label: 'Honcho', icon: Globe },
     ],
   },
 ];
@@ -110,9 +105,14 @@ export default function Sidebar() {
             <Zap className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
-            <div className="animate-slide-in">
-              <h1 className="text-lg font-bold gradient-text">Hermes</h1>
-              <p className="text-[10px] text-zinc-500 -mt-1">Admin Dashboard</p>
+            <div className="animate-slide-in flex items-center gap-2">
+              <div>
+                <h1 className="text-lg font-bold gradient-text">Hermes</h1>
+                <p className="text-[10px] text-zinc-500 -mt-1">Admin Dashboard</p>
+              </div>
+              <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 leading-none">
+                v0.1
+              </span>
             </div>
           )}
           <button onClick={() => setMobileOpen(false)} className="ml-auto lg:hidden p-1 min-w-[44px] min-h-[44px] flex items-center justify-center">
@@ -120,44 +120,46 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navSections.map((section) => (
-            <div key={section.label} className="mb-3">
+        <nav className="flex-1 py-4 px-3 overflow-y-auto">
+          {navSections.map((section, sIdx) => (
+            <div key={section.label} className={`${sIdx > 0 ? 'mt-5' : ''}`}>
               {!collapsed && (
-                <p className="px-3 py-1.5 text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
                   {section.label}
                 </p>
               )}
-              {section.items.map((item) => {
-                const isActive = pathname === item.href ||
-                  (item.href !== '/' && pathname.startsWith(item.href));
-                const Icon = item.icon;
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href ||
+                    (item.href !== '/' && pathname.startsWith(item.href));
+                  const Icon = item.icon;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-xl
-                      transition-all duration-200 group
-                      min-h-[44px]
-                      ${isActive
-                        ? 'bg-gradient-to-r from-indigo-500/15 to-violet-500/15 dark:text-white text-indigo-600 border border-indigo-500/20'
-                        : 'dark:text-zinc-400 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-900 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border border-transparent'
-                      }
-                    `}
-                  >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'dark:group-dark:hover:text-zinc-200 hover:text-zinc-800 hover:text-zinc-800 group-hover:text-zinc-700'}`} />
-                    {!collapsed && (
-                      <span className="text-sm font-medium animate-slide-in">{item.label}</span>
-                    )}
-                    {isActive && !collapsed && (
-                      <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                    )}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`
+                        relative flex items-center gap-3 px-3 py-2.5 rounded-xl
+                        transition-all duration-200 group
+                        min-h-[44px]
+                        ${isActive
+                          ? 'bg-gradient-to-r from-indigo-500/15 to-violet-500/15 dark:text-white text-indigo-600'
+                          : 'dark:text-zinc-400 text-zinc-600 dark:hover:text-zinc-200 hover:text-zinc-900 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50'
+                        }
+                      `}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-400" />
+                      )}
+                      <Icon className={`w-[18px] h-[18px] flex-shrink-0 ${isActive ? 'text-indigo-400' : 'dark:group-hover:text-zinc-200 group-hover:text-zinc-700'}`} />
+                      {!collapsed && (
+                        <span className="text-sm font-medium animate-slide-in">{item.label}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           ))}
         </nav>
@@ -166,7 +168,7 @@ export default function Sidebar() {
           <div className="flex items-center gap-1">
             <button
               onClick={toggleTheme}
-              className="flex items-center justify-center p-2.5 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors min-w-[44px] min-h-[44px]"
+              className="flex items-center justify-center p-2.5 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors min-w-[44px] min-h-[44px]"
               title="Toggle theme"
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -174,7 +176,7 @@ export default function Sidebar() {
             <div className="flex-1" />
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="flex items-center justify-center p-2.5 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-700 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors min-w-[44px] min-h-[44px]"
+              className="flex items-center justify-center p-2.5 rounded-xl dark:text-zinc-500 text-zinc-600 dark:hover:text-zinc-300 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 transition-colors min-w-[44px] min-h-[44px]"
             >
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
