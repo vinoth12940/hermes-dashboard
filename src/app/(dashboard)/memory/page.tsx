@@ -3,7 +3,27 @@
 import { useState, useEffect } from 'react';
 import Badge from '@/components/Badge';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Brain, User, Save, RotateCcw, Sparkles } from 'lucide-react';
+import { Brain, User, Save, RotateCcw, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react';
+
+function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-zinc-800/50 ${className}`} />;
+}
+
+function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="glass-card p-6 text-center space-y-3">
+      <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto" />
+      <p className="text-sm text-zinc-400">{message}</p>
+      <button
+        onClick={onRetry}
+        className="px-4 py-2 rounded-xl text-sm font-medium dark:text-zinc-400 text-zinc-500 dark:hover:text-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors inline-flex items-center gap-2"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Retry
+      </button>
+    </div>
+  );
+}
 
 type TabType = 'user' | 'memory' | 'soul';
 
@@ -13,6 +33,7 @@ export default function MemoryPage() {
   const [soulContent, setSoulContent] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('user');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [originalUser, setOriginalUser] = useState('');
@@ -25,6 +46,8 @@ export default function MemoryPage() {
   }, []);
 
   const fetchMemory = async () => {
+    setLoading(true);
+    setError('');
     try {
       const res = await fetch('/api/memory');
       if (res.ok) {
@@ -35,8 +58,12 @@ export default function MemoryPage() {
         setOriginalUser(data.userContent || '');
         setOriginalMemory(data.memoryContent || '');
         setOriginalSoul(data.soulContent || '');
+      } else {
+        setError('Failed to load memory data');
       }
-    } catch (e) { console.error(e); }
+    } catch {
+      setError('Failed to load memory data');
+    }
     setLoading(false);
   };
 
@@ -116,8 +143,42 @@ export default function MemoryPage() {
     soul: 'SOUL.md',
   };
 
+  const tabLimits: Record<TabType, number> = { user: 2750, memory: 4400, soul: 5000 };
+
+  const allTabUsage = (['user', 'memory', 'soul'] as TabType[]).map(tab => ({
+    tab,
+    chars: tab === 'user' ? userContent.length : tab === 'memory' ? memoryContent.length : soulContent.length,
+    max: tabLimits[tab],
+  }));
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-zinc-500">Loading memory...</p></div>;
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <Skeleton className="h-8 w-40" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-32 rounded-xl" />
+          <Skeleton className="h-10 w-36 rounded-xl" />
+          <Skeleton className="h-10 w-24 rounded-xl" />
+        </div>
+        <div className="glass-card p-4 space-y-3">
+          <Skeleton className="h-3 w-48" />
+          <Skeleton className="h-2 w-full rounded-full" />
+        </div>
+        <div className="glass-card p-4 space-y-3">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-[50vh] w-full rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <Skeleton className="h-8 w-40" />
+        <ErrorBlock message={error} onRetry={fetchMemory} />
+      </div>
+    );
   }
 
   return (
@@ -152,6 +213,29 @@ export default function MemoryPage() {
               <Icon className="w-4 h-4" />
               {tab.label}
             </button>
+          );
+        })}
+      </div>
+
+      {/* All tabs usage stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {allTabUsage.map(({ tab, chars, max }) => {
+          const pct = Math.round((chars / max) * 100);
+          return (
+            <div key={tab} className="glass-card p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-zinc-500">{fileNames[tab]}</span>
+                <span className="text-xs text-zinc-500">{chars.toLocaleString()}/{max.toLocaleString()}</span>
+              </div>
+              <div className="h-2 dark:bg-zinc-800 bg-zinc-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
+                  }`}
+                  style={{ width: `${Math.min(pct, 100)}%` }}
+                />
+              </div>
+            </div>
           );
         })}
       </div>
@@ -199,7 +283,7 @@ export default function MemoryPage() {
         <textarea
           value={getContent()}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full h-[50vh] dark:bg-zinc-900/50 bg-zinc-50 dark:text-zinc-600 text-zinc-500 font-mono text-sm p-4 resize-none border-none focus:ring-0"
+          className="w-full h-[50vh] dark:bg-zinc-900/50 bg-zinc-50 dark:text-zinc-300 text-zinc-500 font-mono text-sm p-4 resize-none border-none focus:ring-0"
           spellCheck={false}
           placeholder="No content yet..."
         />

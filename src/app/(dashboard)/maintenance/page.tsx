@@ -15,13 +15,22 @@ interface Service {
 }
 
 interface SystemInfo {
-  os: string;
-  kernel: string;
-  hostname: string;
-  ip: string;
-  cfTunnel: 'running' | 'stopped' | 'unknown';
-  ufwRules: number;
-  ufwPorts: string[];
+  os: {
+    version: string;
+    kernel: string;
+    kernelFull: string;
+    hostname: string;
+    architecture: string;
+    platform: string;
+  };
+  cpu: { model: string; cores: number };
+  network: { localIPs: string[]; publicIP: string };
+  cloudflareTunnel: { status: string; info: string } | null;
+  firewall: { status: string; rules: Array<{ rule: string; detail: string }> };
+  ssh: Record<string, string>;
+  openPorts: Array<{ port: string; state: string; service: string; process: string }>;
+  uptime: { days: number; hours: number; rawSeconds: number };
+  versions: { hermes: string; node: string };
 }
 
 interface DiskInfo {
@@ -105,7 +114,13 @@ export default function MaintenancePage() {
       const res = await fetch('/api/services');
       if (res.ok) {
         const data = await res.json();
-        setServices(data.services || []);
+        const mapped = (data.services || []).map((s: any) => ({
+          name: s.service,
+          status: s.status,
+          uptime: s.uptimeSeconds ? `${Math.floor(s.uptimeSeconds / 3600)}h ${Math.floor((s.uptimeSeconds % 3600) / 60)}m` : '-',
+          memory: s.memoryBytes ? `${(s.memoryBytes / 1024 / 1024).toFixed(1)} MB` : '-',
+        }));
+        setServices(mapped);
       } else if (res.status === 404) {
         setServicesError('Services API not available yet');
       } else {
@@ -141,7 +156,20 @@ export default function MaintenancePage() {
       const res = await fetch('/api/disk');
       if (res.ok) {
         const data = await res.json();
-        setDiskInfo(data);
+        const overall = data.overall || [];
+        const root = overall.find((d: any) => d.mount === '/') || overall[0] || {};
+        const pctNum = parseInt((root.percent || '0').replace('%', ''));
+        setDiskInfo({
+          total: root.size || '?',
+          used: root.used || '?',
+          free: root.available || '?',
+          percent: pctNum,
+          largestDirs: (data.topDirectories || []).map((d: any) => ({
+            name: d.path || d.name || '?',
+            size: d.size || '?',
+            sizeBytes: d.sizeBytes || 0,
+          })),
+        });
       } else if (res.status === 404) {
         setDiskError('Disk API not available yet');
       } else {
@@ -375,8 +403,8 @@ export default function MaintenancePage() {
                 <Server className="w-4 h-4 text-indigo-400" />
                 OS &amp; Kernel
               </div>
-              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700">{sysInfo.os}</p>
-              <p className="text-xs dark:text-zinc-400 text-zinc-500 font-mono">{sysInfo.kernel}</p>
+              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700">{sysInfo.os.version}</p>
+              <p className="text-xs dark:text-zinc-400 text-zinc-500 font-mono">{sysInfo.os.kernel}</p>
             </div>
             {/* Hostname & IP */}
             <div className="glass-card p-5 space-y-2">
@@ -384,8 +412,8 @@ export default function MaintenancePage() {
                 <Activity className="w-4 h-4 text-indigo-400" />
                 Hostname &amp; IP
               </div>
-              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700 font-mono">{sysInfo.hostname}</p>
-              <p className="text-xs dark:text-zinc-400 text-zinc-500 font-mono">{sysInfo.ip}</p>
+              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700 font-mono">{sysInfo.os.hostname}</p>
+              <p className="text-xs dark:text-zinc-400 text-zinc-500 font-mono">{sysInfo.network.publicIP}</p>
             </div>
             {/* CF Tunnel */}
             <div className="glass-card p-5 space-y-2">
@@ -393,7 +421,7 @@ export default function MaintenancePage() {
                 <Shield className="w-4 h-4 text-indigo-400" />
                 CF Tunnel
               </div>
-              <div className="pt-1">{statusBadge(sysInfo.cfTunnel)}</div>
+              <div className="pt-1">{statusBadge(sysInfo.cloudflareTunnel?.status as any || 'unknown')}</div>
             </div>
             {/* UFW Firewall */}
             <div className="glass-card p-5 space-y-2">
@@ -401,14 +429,14 @@ export default function MaintenancePage() {
                 <Shield className="w-4 h-4 text-indigo-400" />
                 UFW Firewall
               </div>
-              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700">{sysInfo.ufwRules} rules</p>
+              <p className="text-sm font-medium dark:text-zinc-200 text-zinc-700">{sysInfo.firewall.rules.length} rules</p>
               <div className="flex flex-wrap gap-1">
-                {(sysInfo.ufwPorts || []).slice(0, 5).map(p => (
-                  <span key={p} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">{p}</span>
+                {sysInfo.firewall.rules.slice(0, 5).map((r: any) => (
+                  <span key={r.rule} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">{r.detail}</span>
                 ))}
-                {(sysInfo.ufwPorts || []).length > 5 && (
+                {sysInfo.firewall.rules.length > 5 && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">
-                    +{sysInfo.ufwPorts.length - 5}
+                    +{sysInfo.firewall.rules.length - 5}
                   </span>
                 )}
               </div>

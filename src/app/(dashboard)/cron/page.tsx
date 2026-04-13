@@ -6,8 +6,42 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   Clock, Play, Pause, Trash2, RefreshCw, Plus, Calendar,
   AlertCircle, CheckCircle, Square, ChevronDown, ChevronUp,
-  Save, Loader2, X, Edit3
+  Save, Loader2, X, Edit3, AlertTriangle
 } from 'lucide-react';
+
+function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-zinc-800/50 ${className}`} />;
+}
+
+function SkeletonCard() {
+  return (
+    <div className="glass-card p-5 space-y-3">
+      <Skeleton className="h-5 w-40" />
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-4 w-32" />
+      <div className="flex gap-2 pt-2">
+        <Skeleton className="h-8 w-20 rounded-lg" />
+        <Skeleton className="h-8 w-16 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="glass-card p-6 text-center space-y-3">
+      <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto" />
+      <p className="text-sm text-zinc-400">{message}</p>
+      <button
+        onClick={onRetry}
+        className="px-4 py-2 rounded-xl text-sm font-medium dark:text-zinc-400 text-zinc-500 dark:hover:text-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800/50 hover:bg-zinc-200/50 border dark:border-zinc-800/50 border-zinc-200/50 transition-colors inline-flex items-center gap-2"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Retry
+      </button>
+    </div>
+  );
+}
 
 interface CronJob {
   id?: string;
@@ -39,6 +73,7 @@ interface CronJob {
 export default function CronPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [confirmAction, setConfirmAction] = useState<{ type: string; job: CronJob } | null>(null);
@@ -69,13 +104,18 @@ export default function CronPage() {
 
   const fetchJobs = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await fetch('/api/cron');
       if (res.ok) {
         const data = await res.json();
         setJobs(data.jobs || []);
+      } else {
+        setError('Failed to load cron jobs');
       }
-    } catch (e) { console.error(e); }
+    } catch {
+      setError('Failed to load cron jobs');
+    }
     setLoading(false);
   };
 
@@ -365,8 +405,36 @@ export default function CronPage() {
         </div>
       )}
 
+      {/* Summary Stats */}
+      {!loading && !error && jobs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="glass-card p-4">
+            <p className="text-xs text-zinc-500 mb-1">Total Jobs</p>
+            <p className="text-xl font-bold dark:text-zinc-100 text-zinc-900">{jobs.length}</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-xs text-zinc-500 mb-1">Active</p>
+            <p className="text-xl font-bold text-emerald-400">{jobs.filter(j => j.enabled !== false && !j.last_error).length}</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-xs text-zinc-500 mb-1">Paused</p>
+            <p className="text-xl font-bold text-amber-400">{jobs.filter(j => j.enabled === false && !j.last_error).length}</p>
+          </div>
+          <div className="glass-card p-4">
+            <p className="text-xs text-zinc-500 mb-1">Errored</p>
+            <p className="text-xl font-bold text-red-400">{jobs.filter(j => j.last_error).length}</p>
+          </div>
+        </div>
+      )}
+
       {loading ? (
-        <div className="flex items-center justify-center h-64"><p className="text-zinc-500">Loading cron jobs...</p></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : error ? (
+        <ErrorBlock message={error} onRetry={fetchJobs} />
       ) : jobs.length === 0 && !showAddForm ? (
         <div className="glass-card p-12 text-center">
           <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
