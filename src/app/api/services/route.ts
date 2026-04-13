@@ -6,8 +6,8 @@ const SERVICES = ['hermes-gateway', 'hermes-dashboard', 'cloudflared-tunnel'];
 
 function getServiceInfo(service: string) {
   try {
-    const status = execSync(`systemctl is-active ${service} 2>/dev/null`, { encoding: 'utf8', timeout: 10000 }).trim();
-    const uptimeRaw = execSync(`systemctl show ${service} --property=ActiveEnterTimestamp --value 2>/dev/null`, { encoding: 'utf8', timeout: 10000 }).trim();
+    const status = execSync(`systemctl is-active ${service} 2>/dev/null || true`, { encoding: 'utf8', timeout: 10000 }).trim() || 'unknown';
+    const uptimeRaw = execSync(`systemctl show ${service} --property=ActiveEnterTimestamp --value 2>/dev/null || true`, { encoding: 'utf8', timeout: 10000 }).trim();
 
     // Get memory usage via cgroup or PID RSS
     let memoryBytes = 0;
@@ -33,7 +33,7 @@ function getServiceInfo(service: string) {
       console.error(`Could not parse uptime for ${service}:`, e);
     }
 
-    const cpuPercent = execSync(`systemctl show ${service} --property=CPUUsageNSec --value 2>/dev/null`, { encoding: 'utf8', timeout: 10000 }).trim();
+    const cpuPercent = execSync(`systemctl show ${service} --property=CPUUsageNSec --value 2>/dev/null || true`, { encoding: 'utf8', timeout: 10000 }).trim();
 
     return {
       service,

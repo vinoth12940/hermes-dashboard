@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
   if (auth.error) return auth.error;
 
   try {
-    const status = execSync('systemctl is-active hermes-gateway', { encoding: 'utf8' }).trim();
-    const uptime = execSync('systemctl show hermes-gateway --property=ActiveEnterTimestamp --value', { encoding: 'utf8' }).trim();
+    const status = execSync('systemctl is-active hermes-gateway 2>/dev/null || true', { encoding: 'utf8' }).trim() || 'unknown';
+    const uptime = execSync('systemctl show hermes-gateway --property=ActiveEnterTimestamp --value 2>/dev/null || true', { encoding: 'utf8' }).trim();
     return NextResponse.json({ status, since: uptime });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

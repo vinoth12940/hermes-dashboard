@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     let cfTunnelStatus = 'unknown';
     let cfTunnelInfo: any = null;
     try {
-      cfTunnelStatus = execSync('systemctl is-active cloudflared-tunnel 2>/dev/null', { encoding: 'utf8', timeout: 10000 }).trim();
+      cfTunnelStatus = execSync('systemctl is-active cloudflared-tunnel 2>/dev/null || true', { encoding: 'utf8', timeout: 10000 }).trim() || 'unknown';
       const tunnelUrl = execSync('sudo cloudflared-tunnel info 2>/dev/null || echo "not available"', { encoding: 'utf8', timeout: 10000 }).trim();
       cfTunnelInfo = { status: cfTunnelStatus, info: tunnelUrl };
     } catch (e: any) {

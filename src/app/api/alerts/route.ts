@@ -64,7 +64,7 @@ function getSystemValue(type: string): number {
       return Math.round((parseInt(memValues[2]) / parseInt(memValues[1])) * 100);
     }
     if (type === 'gateway') {
-      const status = execSync('systemctl is-active hermes-gateway 2>/dev/null', { encoding: 'utf8' }).trim();
+      const status = execSync('systemctl is-active hermes-gateway 2>/dev/null || true', { encoding: 'utf8' }).trim() || 'unknown';
       return status === 'active' ? 1 : 0;
     }
   } catch {}
