@@ -5,6 +5,12 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const { pathname } = request.nextUrl;
 
+  // Allow public API routes (health checks, capability probes)
+  if (pathname === '/api/status' || pathname === '/api/config/defaults' ||
+      pathname === '/api/config/schema' || pathname === '/api/model/info') {
+    return NextResponse.next();
+  }
+
   // Allow auth routes
   if (pathname === '/login' || pathname.startsWith('/api/auth/')) {
     if (pathname === '/login' && token) {
